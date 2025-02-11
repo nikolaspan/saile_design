@@ -1,4 +1,5 @@
 // tailwind.config.js
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const typography = require("@tailwindcss/typography");
 const forms = require("@tailwindcss/forms");
