@@ -1,5 +1,5 @@
 // Import required modules
-import type { Metadata } from "next";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider"; // Ensure this path is correct
 import "./globals.css";
@@ -15,11 +15,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Metadata for the application
-export const metadata: Metadata = {
-  title: "SAIL-E",
-  description: "SAIL-E Dashboard",
-};
 
 // RootLayout Component
 export default function RootLayout({
