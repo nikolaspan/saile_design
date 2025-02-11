@@ -1,34 +1,29 @@
-// Import required modules
-
-import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/ui/theme-provider"; // Ensure this path is correct
+// app/layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google"; // use Inter instead of Geist
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import "./globals.css";
 
-// Configure fonts
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Configure the font
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const metadata: Metadata = {
+  title: "SAIL-E",
+  description: "SAIL-E Dashboard",
+};
 
-
-// RootLayout Component
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* Apply the ThemeProvider */}
+      <body className={`${inter.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
