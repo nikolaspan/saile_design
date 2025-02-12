@@ -14,13 +14,16 @@ export default function TripsCalendar() {
   const router = useRouter();
 
   const selectedTrips = selectedDate
-    ? trips.filter((trip) => format(parseISO(trip.date), "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+    ? trips.filter(
+        (trip) =>
+          format(parseISO(trip.date), "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")
+      )
     : [];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 w-full">
       {/* Calendar Section */}
-      <Card className="w-full max-w-[750px]"> {/* Increased width */}
+      <Card className="w-full max-w-[750px]">
         <CardHeader>
           <CardTitle>Trips Calendar</CardTitle>
         </CardHeader>
@@ -31,13 +34,16 @@ export default function TripsCalendar() {
             onSelect={setSelectedDate}
             modifiers={{
               tripDays: (date) =>
-                trips.some((trip) => format(parseISO(trip.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd")),
+                trips.some(
+                  (trip) =>
+                    format(parseISO(trip.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
+                ),
             }}
             modifiersClassNames={{
               tripDays: "bg-aquaBlue text-black dark:text-white rounded-full",
               selected: "bg-blue-500 dark:bg-blue-400 text-white font-bold",
             }}
-            className="w-full h-[450px] max-w-[600px]" // Increased width and height
+            className="w-full h-[450px] max-w-[600px]"
           />
         </CardContent>
       </Card>
@@ -53,16 +59,27 @@ export default function TripsCalendar() {
               {selectedTrips.map((trip) => {
                 const { status, color } = getTripStatus(trip.date);
                 return (
-                  <li key={trip.id} className="p-3 border rounded-lg bg-white dark:bg-gray-700 shadow">
-                    <p><strong>Charter Type:</strong> {trip.charterType}</p>
-                    <p><strong>Itinerary:</strong> {trip.itineraryName}</p>
-                    <p><strong>Revenue:</strong> €{trip.revenue.toFixed(2)}</p>
-                    <p><strong>Date:</strong> {format(parseISO(trip.date), "yyyy-MM-dd")}</p>
+                  <li
+                    key={trip.id}
+                    className="p-3 border rounded-lg bg-white dark:bg-gray-700 shadow"
+                  >
+                    <p>
+                      <strong>Charter Type:</strong> {trip.charterType}
+                    </p>
+                    <p>
+                      <strong>Itinerary:</strong> {trip.itineraryName}
+                    </p>
+                    <p>
+                      <strong>Revenue:</strong> €{trip.revenue.toFixed(2)}
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {format(parseISO(trip.date), "yyyy-MM-dd")}
+                    </p>
                     <Badge className={`bg-${color}-500 text-white mt-2`}>{status}</Badge>
                     <Button
                       variant="default"
                       className="mt-2"
-                      onClick={() => router.push(`/dashboard/concierge/bookings/${trip.id}`)}
+                      onClick={() => router.push(`/dashboard/b2b/bookings/${trip.id}`)}
                     >
                       Learn More
                     </Button>
@@ -73,7 +90,7 @@ export default function TripsCalendar() {
           ) : (
             <div className="text-center">
               <p className="text-gray-500 dark:text-gray-400">No trips on this date.</p>
-              {/* ✅ Check Request Button (Replaces Book Now) */}
+              {/* Check Request Button */}
               <Button
                 variant="secondary"
                 className="mt-4 px-4 py-2"

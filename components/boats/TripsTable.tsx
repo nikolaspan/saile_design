@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -21,6 +22,8 @@ import {
 } from "@/components/ui/select";
 
 export default function TripsTable() {
+  const router = useRouter();
+
   // Use "All" as the default value for dropdowns
   const [charterFilter, setCharterFilter] = useState<string>("All");
   const [itineraryFilter, setItineraryFilter] = useState("");
@@ -87,6 +90,7 @@ export default function TripsTable() {
               <SelectItem value="Half Day">Half Day</SelectItem>
               <SelectItem value="Full Day">Full Day</SelectItem>
               <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
+              <SelectItem value="Sunset Cruise">Sunset Cruise</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -175,12 +179,18 @@ export default function TripsTable() {
               {filteredTrips.length > 0 ? (
                 filteredTrips.map((trip) => {
                   const { status, color } = getTripStatus(trip.date);
-
-                  // Ensure color is of correct type and safely access statusColors
-                  const badgeColor = statusColors[color as keyof typeof statusColors] || "bg-gray-400";
+                  const badgeColor =
+                    statusColors[color as keyof typeof statusColors] ||
+                    "bg-gray-400";
 
                   return (
-                    <TableRow key={trip.id}>
+                    <TableRow
+                      key={trip.id}
+                      className="cursor-pointer "
+                      onClick={() =>
+                        router.push(`/dashboard/b2b/bookings/${trip.id}`)
+                      }
+                    >
                       <TableCell className="text-left">
                         {trip.charterType}
                       </TableCell>
