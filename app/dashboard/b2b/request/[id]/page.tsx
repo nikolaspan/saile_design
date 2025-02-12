@@ -18,6 +18,11 @@ type Request = {
   date: string;
   status: "Pending" | "Accepted" | "Declined";
 };
+ // ✅ Added two constant passengers
+ const passengers = [
+  { passengerId: "P-101", name: "John Doe", birthday: "1990-06-15" },
+  { passengerId: "P-102", name: "Jane Smith", birthday: "1992-08-22" },
+];
 
 export default function RequestDetailsPage() {
   const { id } = useParams();
@@ -66,9 +71,20 @@ export default function RequestDetailsPage() {
                 {request.status}
               </Badge>
             </div>
+            <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Passengers</h3>
+            <ul className="list-disc pl-5">
+              {passengers.map((passenger) => (
+                <li key={passenger.passengerId}>
+                  <strong>{passenger.name}</strong> (ID: {passenger.passengerId}) - Birthday: {passenger.birthday}
+                </li>
+              ))}
+            </ul>
+          </div>
           </CardContent>
         </Card>
       </div>
+
     </DashboardLayout>
   );
 }
