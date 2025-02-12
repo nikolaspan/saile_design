@@ -71,7 +71,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                     return (
                       <TableRow
                         key={trip.tripId}
-                        className="cursor-pointer hover:bg-gray-100 transition-colors"
+                        className="cursor-pointer"
                         onClick={() => router.push(`/dashboard/concierge/bookings/${trip.tripId}`)}
                       >
                         <TableCell>{trip.charterType}</TableCell>

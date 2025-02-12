@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { format, parseISO, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Input } from "@/components/ui/input";
 
 // Import JSON data
 import tripsData from "@/components/boats/trips.json";
@@ -25,22 +23,11 @@ type Trip = {
   revenue: number;
   date: string;
 };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type Boat = {
-  id: number;
-  name: string;
-  type: string;
-  length: number;
-  capacity: number;
-};
-
-// Default Sorting Configuration
-const defaultSortConfig = { key: "date", direction: "ascending" };
 
 export default function B2BDashboard() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState("All");
-  const [sortConfig, setSortConfig] = useState(defaultSortConfig);
+  const [sortConfig, setSortConfig] = useState({ key: "date", direction: "ascending" });
 
   // Function to get trip status
   const getTripStatus = (date: string) => {
@@ -76,7 +63,7 @@ export default function B2BDashboard() {
         {/* Today's Bookings Card */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Todays Bookings</CardTitle>
+            <CardTitle>Today&apos;s Bookings</CardTitle>
           </CardHeader>
           <CardContent>
             {todaysBookings.length > 0 ? (
@@ -135,13 +122,15 @@ export default function B2BDashboard() {
                     const { status, color } = getTripStatus(trip.date);
                     const boat = boatsData.boats.find((b) => b.id === trip.boatId);
                     return (
-                      <TableRow key={trip.id} className="cursor-pointer hover:bg-gray-100" onClick={() => router.push(`/dashboard/b2b/trips/${trip.id}`)}>
+                      <TableRow key={trip.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/b2b/trips/${trip.id}`)}>
                         <TableCell>{format(parseISO(trip.date), "yyyy-MM-dd")}</TableCell>
                         <TableCell>{trip.charterType}</TableCell>
                         <TableCell>{trip.itineraryName}</TableCell>
                         <TableCell>{boat ? boat.name : "Unknown"}</TableCell>
                         <TableCell>€{trip.revenue}</TableCell>
-                        <TableCell><Badge className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}>{status}</Badge></TableCell>
+                        <TableCell>
+                          <Badge className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}>{status}</Badge>
+                        </TableCell>
                       </TableRow>
                     );
                   })}

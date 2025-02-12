@@ -85,7 +85,7 @@ export default function RequestManagementPage() {
                 <TableBody>
                   {requests.length > 0 ? (
                     requests.map((request) => (
-                      <TableRow key={request.id} className="hover:bg-gray-100 transition-colors">
+                      <TableRow key={request.id} className="transition-colors">
                         <TableCell onClick={() => router.push(`/dashboard/b2b/request/${request.id}`)} className="cursor-pointer">
                           {request.hotel}
                         </TableCell>

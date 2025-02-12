@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO } from "date-fns";
@@ -71,13 +73,13 @@ export default function TripsCalendar() {
           ) : (
             <div className="text-center">
               <p className="text-gray-500 dark:text-gray-400">No trips on this date.</p>
-              {/* Ensure Book Now Button is always visible */}
+              {/* ✅ Check Request Button (Replaces Book Now) */}
               <Button
                 variant="secondary"
                 className="mt-4 px-4 py-2"
-                onClick={() => router.push(`/dashboard/concierge/bookings/new`)}
+                onClick={() => router.push(`/dashboard/b2b/request/`)}
               >
-                Book Now
+                Check Request
               </Button>
             </div>
           )}
