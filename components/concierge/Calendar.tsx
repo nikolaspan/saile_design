@@ -16,13 +16,14 @@ type Trip = {
   itineraryName: string;
   revenue: number;
   date: string;
-  roomId: string;
+  boatId: number; // Update from roomId to boatId
   passengers: {
     passengerId: string;
     name: string;
-    birthId: string;
+    birthday: string; // Fix birthId to birthday
   }[];
 };
+
 
 const trips: Trip[] = tripsData.trips;
 

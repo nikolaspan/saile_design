@@ -17,7 +17,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 interface Passenger {
   passengerId: string;
   name: string;
-  birthId: string;
+  birthday: string;
 }
 
 interface Trip {
@@ -39,12 +39,16 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
   const router = useRouter();
 
   const getTripStatus = (trip: Trip, tableTitle: string) => {
-    if (tableTitle === "Canceled Trips") return { status: "Canceled", color: "red" };
-    if (tableTitle === "Requested Trips") return { status: "Requested", color: "yellow" };
+    if (tableTitle === "Canceled Trips")
+      return { status: "Canceled", color: "red" };
+    if (tableTitle === "Requested Trips")
+      return { status: "Requested", color: "yellow" };
 
     const tripDate = new Date(trip.date);
     const today = new Date();
-    return tripDate < today ? { status: "Completed", color: "green" } : { status: "Pending", color: "blue" };
+    return tripDate < today
+      ? { status: "Completed", color: "green" }
+      : { status: "Pending", color: "blue" };
   };
 
   return (
@@ -72,11 +76,15 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                       <TableRow
                         key={trip.tripId}
                         className="cursor-pointer"
-                        onClick={() => router.push(`/dashboard/concierge/bookings/${trip.tripId}`)}
+                        onClick={() =>
+                          router.push(`/dashboard/concierge/bookings/${trip.tripId}`)
+                        }
                       >
                         <TableCell>{trip.charterType}</TableCell>
                         <TableCell>{trip.itineraryName}</TableCell>
-                        <TableCell>{format(parseISO(trip.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell>
+                          {format(parseISO(trip.date), "yyyy-MM-dd")}
+                        </TableCell>
                         <TableCell>
                           <Badge className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}>
                             {status}

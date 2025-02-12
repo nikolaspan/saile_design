@@ -44,7 +44,7 @@ export default function RequestDetailsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <strong>Requester:</strong> {request.requester}
+              <strong>Staff:</strong> {request.requester}
             </div>
             <div>
               <strong>Itinerary:</strong> {request.itineraryName}

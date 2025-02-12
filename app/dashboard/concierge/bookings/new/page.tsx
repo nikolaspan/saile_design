@@ -52,8 +52,9 @@ export default function NewBookingPage() {
   // Step 2: Boat selection
   const handleBoatSelect = (boat: Boat) => {
     setSelectedBoat(boat);
+    // Update initialization to use keys that match PassengerInfo:
     setPassengers(
-      Array.from({ length: passengerCount }, () => ({ name: "", birthId: "" }))
+      Array.from({ length: passengerCount }, () => ({ fullName: "", idNumber: "", birth: "" }))
     );
     setSelectedItinerary([]);
     setStep(3);

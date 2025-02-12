@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -12,31 +13,23 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format, parseISO, isWithinInterval } from "date-fns";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 // ✅ Import JSON directly
 import tripsData from "./trips.json";
 
+// Updated Trip type to match our JSON structure
 type Trip = {
   tripId: string;
   charterType: string;
   itineraryName: string;
   revenue: number;
   date: string;
-  roomId: string;
+  boatId: number; // JSON uses boatId instead of roomId
   passengers: {
     passengerId: string;
     name: string;
-    birthId: string;
+    birthday: string; // JSON now uses birthday instead of birthId
   }[];
 };
 
@@ -49,6 +42,8 @@ export default function TripsTable() {
   const router = useRouter();
   const trips: Trip[] = tripsData.trips;
 
+  // Filter states
+
   const [charterFilter, setCharterFilter] = useState("All");
   const [itineraryFilter, setItineraryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -59,6 +54,7 @@ export default function TripsTable() {
     direction: "ascending",
   });
 
+  // Determine trip status based on date
   const getTripStatus = (date: string): { status: string; color: string } => {
     const tripDate = new Date(date);
     const today = new Date();
@@ -69,11 +65,14 @@ export default function TripsTable() {
     return { status: "Pending", color: "blue" };
   };
 
-  // ✅ Apply filters
+  // Apply filters to trips
   const filteredTrips = trips.filter((trip) => {
     const { status } = getTripStatus(trip.date);
-    const charterMatches = charterFilter === "All" || trip.charterType === charterFilter;
-    const itineraryMatches = itineraryFilter === "" || trip.itineraryName.toLowerCase().includes(itineraryFilter.toLowerCase());
+    const charterMatches =
+      charterFilter === "All" || trip.charterType === charterFilter;
+    const itineraryMatches =
+      itineraryFilter === "" ||
+      trip.itineraryName.toLowerCase().includes(itineraryFilter.toLowerCase());
     const statusMatches = statusFilter === "All" || status === statusFilter;
 
     const tripDate = parseISO(trip.date);
@@ -92,14 +91,14 @@ export default function TripsTable() {
     return charterMatches && itineraryMatches && statusMatches && dateMatches;
   });
 
-  // ✅ Sorting function
+  // Apply sorting
   const sortedTrips = useMemo(() => {
     const sortableTrips = [...filteredTrips];
     if (sortConfig) {
       sortableTrips.sort((a, b) => {
         let aValue: string | Date;
         let bValue: string | Date;
-        switch (sortConfig?.key) { // ✅ Optional chaining prevents errors
+        switch (sortConfig.key) {
           case "charterType":
             aValue = a.charterType.toLowerCase();
             bValue = b.charterType.toLowerCase();
@@ -122,16 +121,24 @@ export default function TripsTable() {
         }
 
         if (aValue < bValue) {
-          return sortConfig?.direction === "ascending" ? -1 : 1;
+          return sortConfig.direction === "ascending" ? -1 : 1;
         }
         if (aValue > bValue) {
-          return sortConfig?.direction === "ascending" ? 1 : -1;
+          return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
       });
     }
     return sortableTrips;
   }, [filteredTrips, sortConfig]);
+
+  // Helper function to render sort indicator
+  const renderSortIndicator = (key: string) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === "ascending" ? " ▲" : " ▼";
+    }
+    return "";
+  };
 
   return (
     <Card>
@@ -140,68 +147,90 @@ export default function TripsTable() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="flex flex-col">
-              <span className="mb-1 text-sm font-medium">Charter Type</span>
-              <Select value={charterFilter} onValueChange={setCharterFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Charter Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                  <SelectItem value="Half Day">Half Day</SelectItem>
-                  <SelectItem value="Full Day">Full Day</SelectItem>
-                  <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col">
-              <span className="mb-1 text-sm font-medium">Itinerary Name</span>
-              <Input
-                placeholder="Search Itinerary Name"
-                className="w-64"
-                value={itineraryFilter}
-                onChange={(e) => setItineraryFilter(e.target.value)}
-              />
-            </div>
-
-            <Button variant="outline" onClick={() => {
-              setCharterFilter("All");
-              setItineraryFilter("");
-              setStatusFilter("All");
-              setStartDate("");
-              setEndDate("");
-            }}>
-              Reset Filters
-            </Button>
-          </div>
-
+          {/* Table Section */}
           <div className="border rounded-lg shadow-md overflow-hidden">
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead onClick={() => setSortConfig({ key: "charterType", direction: sortConfig?.direction === "ascending" ? "descending" : "ascending" })}>
-                      Charter Type
+                    <TableHead
+                      onClick={() =>
+                        setSortConfig({
+                          key: "charterType",
+                          direction:
+                            sortConfig.key === "charterType"
+                              ? sortConfig.direction === "ascending"
+                                ? "descending"
+                                : "ascending"
+                              : "ascending",
+                        })
+                      }
+                    >
+                      Charter Type{renderSortIndicator("charterType")}
                     </TableHead>
-                    <TableHead onClick={() => setSortConfig({ key: "itineraryName", direction: sortConfig?.direction === "ascending" ? "descending" : "ascending" })}>
-                      Itinerary Name
+                    <TableHead
+                      onClick={() =>
+                        setSortConfig({
+                          key: "itineraryName",
+                          direction:
+                            sortConfig.key === "itineraryName"
+                              ? sortConfig.direction === "ascending"
+                                ? "descending"
+                                : "ascending"
+                              : "ascending",
+                        })
+                      }
+                    >
+                      Itinerary Name{renderSortIndicator("itineraryName")}
                     </TableHead>
-                    <TableHead onClick={() => setSortConfig({ key: "date", direction: sortConfig?.direction === "ascending" ? "descending" : "ascending" })}>
-                      Date
+                    <TableHead
+                      onClick={() =>
+                        setSortConfig({
+                          key: "date",
+                          direction:
+                            sortConfig.key === "date"
+                              ? sortConfig.direction === "ascending"
+                                ? "descending"
+                                : "ascending"
+                              : "ascending",
+                        })
+                      }
+                    >
+                      Date{renderSortIndicator("date")}
                     </TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead
+                      onClick={() =>
+                        setSortConfig({
+                          key: "status",
+                          direction:
+                            sortConfig.key === "status"
+                              ? sortConfig.direction === "ascending"
+                                ? "descending"
+                                : "ascending"
+                              : "ascending",
+                        })
+                      }
+                    >
+                      Status{renderSortIndicator("status")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedTrips.map((trip) => {
                     const { status, color } = getTripStatus(trip.date);
                     return (
-                      <TableRow key={trip.tripId} className="cursor-pointer" onClick={() => router.push(`/dashboard/concierge/bookings/${trip.tripId}`)}>
+                      <TableRow
+                        key={trip.tripId}
+                        className="cursor-pointer"
+                        onClick={() =>
+                          router.push(`/dashboard/concierge/bookings/${trip.tripId}`)
+                        }
+                      >
                         <TableCell>{trip.charterType}</TableCell>
                         <TableCell>{trip.itineraryName}</TableCell>
-                        <TableCell>{format(parseISO(trip.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell>
+                          {format(parseISO(trip.date), "yyyy-MM-dd")}
+                        </TableCell>
                         <TableCell>
                           <Badge className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}>
                             {status}

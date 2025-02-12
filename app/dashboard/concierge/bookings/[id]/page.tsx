@@ -2,16 +2,15 @@
 
 import React from "react";
 import { useRouter, useParams } from "next/navigation";
-import DashboardLayout from "../../../../layouts/DashboardLayout"; // Adjust this path as needed
+import DashboardLayout from "../../../../layouts/DashboardLayout";
 import { format, parseISO } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-// Import the trips JSON data from your components/concierge folder
-import tripsData from "@/components/concierge/trips.json";
-
-// Define the Trip type based on your JSON data
+// Define the Trip type based on your JSON data.
+// Note: The passengers now include an optional "birthday" field.
+// If "birthday" is provided, it will be used; otherwise, we'll show "birthId".
 type Trip = {
   tripId: string;
   charterType: string;
@@ -22,15 +21,25 @@ type Trip = {
   passengers: {
     passengerId: string;
     name: string;
-    birthId: string;
+    birthId?: string;
+    birthday?: string;
   }[];
 };
 
+// Define the shape of the JSON file so that TypeScript knows that it has a 'trips' property
+interface TripsJson {
+  trips: Trip[];
+}
+
+// Import the trips JSON data from your components/concierge folder and cast it
+import tripsDataRaw from "@/components/concierge/trips.json";
+const tripsData = tripsDataRaw as unknown as TripsJson;
+
 export default function BookingDetails() {
   const router = useRouter();
-  const params = useParams(); // Now using useParams to get route parameters
-  const id = params.id as string; // Extract the dynamic route id (with a type assertion)
-  const role = "Concierge"; // Example role—adjust as needed
+  const params = useParams();
+  const id = params.id as string;
+  const role = "Concierge";
 
   // Find the booking where the tripId matches the id from the route
   const booking: Trip | undefined = tripsData.trips.find(
@@ -61,6 +70,7 @@ export default function BookingDetails() {
             <CardTitle>{booking.itineraryName}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
+            {/* Booking Information */}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-1 space-y-2">
                 <p>
@@ -81,7 +91,8 @@ export default function BookingDetails() {
                 </p>
               </div>
             </div>
-            <div>
+            {/* Passengers Section */}
+            <div className="flex flex-col gap-4">
               <h3 className="text-lg font-semibold mb-2">Passengers</h3>
               <div className="flex flex-col gap-3">
                 {booking.passengers.map((passenger) => (
@@ -89,8 +100,15 @@ export default function BookingDetails() {
                     key={passenger.passengerId}
                     className="flex flex-col md:flex-row items-start md:items-center gap-2 border p-3 rounded-md"
                   >
-                    <p className="font-medium">{passenger.name}</p>
-                    <Badge>{passenger.birthId}</Badge>
+                    <p className="font-medium flex-1">{passenger.name}</p>
+                    <div className="flex flex-col md:flex-row gap-2">
+                      <Badge className="px-3 py-1 rounded-full">
+                        ID: {passenger.passengerId}
+                      </Badge>
+                      <Badge className="px-3 py-1 rounded-full">
+                        Birthday: {passenger.birthday ?? passenger.birthId}
+                      </Badge>
+                    </div>
                   </div>
                 ))}
               </div>
