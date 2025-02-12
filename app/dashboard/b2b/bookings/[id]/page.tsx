@@ -1,15 +1,34 @@
 "use client";
 
 import { parseISO, format } from "date-fns";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import DashboardLayout from "../../../../layouts/DashboardLayout";
 import { trips, getTripStatus, priceList } from "@/components/boats/data"; // Updated import path
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function BookingDetailsPage({ params }: { params: { id: string } }) {
+export default function BookingDetailsPage() {
   const router = useRouter();
-  const tripId = parseInt(params.id, 10);
+  const params = useParams();
+
+  // Ensure we have an ID; params.id can be a string or an array
+  const idParam =
+    typeof params.id === "string" ? params.id : params.id?.[0];
+
+  if (!idParam) {
+    return (
+      <DashboardLayout role="B2B">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold mb-4">Trip Not Found</h1>
+          <Button variant="outline" onClick={() => router.back()}>
+            ← Back
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const tripId = parseInt(idParam, 10);
   const trip = trips.find((t) => t.id === tripId);
 
   if (!trip) {
