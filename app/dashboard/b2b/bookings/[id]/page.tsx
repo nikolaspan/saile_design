@@ -12,8 +12,7 @@ export default function BookingDetailsPage() {
   const params = useParams();
 
   // Ensure we have an ID; params.id can be a string or an array
-  const idParam =
-    typeof params.id === "string" ? params.id : params.id?.[0];
+  const idParam = typeof params.id === "string" ? params.id : params.id?.[0];
 
   if (!idParam) {
     return (
@@ -46,6 +45,12 @@ export default function BookingDetailsPage() {
 
   const { status } = getTripStatus(trip.date);
   const priceItem = priceList.find((p) => p.id === trip.id);
+
+  // ✅ Added two constant passengers
+  const passengers = [
+    { passengerId: "P-101", name: "John Doe", birthday: "1990-06-15" },
+    { passengerId: "P-102", name: "Jane Smith", birthday: "1992-08-22" },
+  ];
 
   return (
     <DashboardLayout role="B2B">
@@ -84,6 +89,20 @@ export default function BookingDetailsPage() {
               </div>
             </>
           )}
+
+          <hr className="my-4" />
+
+          {/* ✅ Display Passenger Information */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Passengers</h3>
+            <ul className="list-disc pl-5">
+              {passengers.map((passenger) => (
+                <li key={passenger.passengerId}>
+                  <strong>{passenger.name}</strong> (ID: {passenger.passengerId}) - Birthday: {passenger.birthday}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <hr className="my-4" />
         </div>
