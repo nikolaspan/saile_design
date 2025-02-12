@@ -1,0 +1,29 @@
+{
+    "requestedTrips": [
+      {
+        "tripId": "T-20250522-005",
+        "charterType": "Half Day",
+        "itineraryName": "Bay Exploration",
+        "revenue": 4500,
+        "date": "2025-05-22",
+        "roomId": "R-105",
+        "passengers": [
+          { "passengerId": "P-008", "name": "Emma White", "birthId": "BID11223" }
+        ]
+      },
+      {
+        "tripId": "T-20250730-006",
+        "charterType": "VIP Transfer",
+        "itineraryName": "Island Hopping",
+        "revenue": 9000,
+        "date": "2025-07-30",
+        "roomId": "R-106",
+        "passengers": [
+          { "passengerId": "P-009", "name": "William Thompson", "birthId": "BID55678" },
+          { "passengerId": "P-010", "name": "Olivia Martin", "birthId": "BID66789" },
+          { "passengerId": "P-011", "name": "James Anderson", "birthId": "BID77890" }
+        ]
+      }
+    ]
+  }
+  

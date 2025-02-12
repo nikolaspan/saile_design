@@ -17,6 +17,7 @@ export default function NewBookingPage() {
   const [destination, setDestination] = useState<string>("");
   const [passengerCount, setPassengerCount] = useState<number>(0);
   const [date, setDate] = useState<Date | null>(null); // Chosen day as Date
+  const [tripType, setTripType] = useState<string>("Full-day"); // New state for trip type
   const [filteredBoats, setFilteredBoats] = useState<Boat[]>([]);
   const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
   const [passengers, setPassengers] = useState<PassengerInfo[]>([]);
@@ -27,12 +28,13 @@ export default function NewBookingPage() {
   const handleSearch = () => {
     if (!date) return;
     const formattedDate = format(date, "yyyy-MM-dd");
+    const lowerCaseDestination = destination.toLowerCase();
+
     const filtered = allBoats.filter((boat: Boat) =>
-      boat.destinations.some(
-        (dest: string) => dest.toLowerCase() === destination.toLowerCase()
-      ) &&
+      boat.destinations.some((dest: string) => dest.toLowerCase() === lowerCaseDestination) &&
       boat.capacity >= passengerCount &&
-      !boat.notAvailableDates.includes(formattedDate)
+      !boat.notAvailableDates.includes(formattedDate) &&
+      boat.tripTypes.includes(tripType) // Filtering by trip type
     );
     setFilteredBoats(filtered);
     setStep(2);
@@ -59,40 +61,22 @@ export default function NewBookingPage() {
     setPassengers(newPassengers);
   };
 
-  // Handle itinerary checkbox change
+  // Updated onItineraryChange callback that matches the expected signature.
   const handleItineraryChange = (option: ItineraryOption, checked: boolean) => {
     if (checked) {
-      setSelectedItinerary((prev) => [...prev, option]);
+      // Add the option if it is checked and not already selected.
+      setSelectedItinerary((prev) => {
+        if (prev.some((item) => item.name === option.name)) {
+          return prev;
+        }
+        return [...prev, option];
+      });
     } else {
+      // Remove the option if unchecked.
       setSelectedItinerary((prev) =>
         prev.filter((item) => item.name !== option.name)
       );
     }
-  };
-
-  // Final submission
-  const handleSubmit = () => {
-    const booking = {
-      destination,
-      date,
-      passengerCount,
-      selectedBoat,
-      selectedItinerary,
-      hour,
-      passengers,
-    };
-    console.log("Booking submitted:", booking);
-    alert("Booking submitted! Check the console for details.");
-    // Reset form
-    setStep(1);
-    setDestination("");
-    setPassengerCount(0);
-    setDate(null);
-    setFilteredBoats([]);
-    setSelectedBoat(null);
-    setPassengers([]);
-    setSelectedItinerary([]);
-    setHour("");
   };
 
   return (
@@ -106,6 +90,8 @@ export default function NewBookingPage() {
             setPassengerCount={setPassengerCount}
             date={date}
             setDate={setDate}
+            tripType={tripType} // Passing new prop
+            setTripType={setTripType} // Passing setter for trip type
             onSearch={handleSearch}
           />
         )}
@@ -114,6 +100,7 @@ export default function NewBookingPage() {
           <BoatSelection
             boats={filteredBoats}
             destination={destination}
+            tripType={tripType} // Pass the tripType here
             onBoatSelect={handleBoatSelect}
             onBack={() => setStep(1)}
           />
@@ -124,13 +111,16 @@ export default function NewBookingPage() {
             passengers={passengers}
             onPassengerChange={handlePassengerChange}
             onBack={() => setStep(2)}
-            onSubmit={handleSubmit}
             selectedBoatName={selectedBoat.name}
             itineraryOptions={selectedBoat.itinerary}
             selectedItinerary={selectedItinerary}
-            onItineraryChange={handleItineraryChange}
             hour={hour}
             setHour={setHour}
+            onSubmit={() => {
+              // TODO: Implement booking submission
+              console.log("Booking submitted", { passengers, selectedItinerary, hour });
+            }}
+            onItineraryChange={handleItineraryChange}
           />
         )}
       </div>

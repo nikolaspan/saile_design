@@ -1,0 +1,17 @@
+{
+    "canceledTrips": [
+      {
+        "tripId": "T-20250214-011",
+        "charterType": "VIP Transfer",
+        "itineraryName": "Luxury Sunset Cruise",
+        "revenue": 11000,
+        "date": "2025-02-14",
+        "roomId": "R-111",
+        "passengers": [
+          { "passengerId": "P-018", "name": "Henry Lee", "birthId": "BID55667" },
+          { "passengerId": "P-019", "name": "Mia Adams", "birthId": "BID66778" }
+        ]
+      }
+    ]
+  }
+  

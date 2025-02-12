@@ -9,7 +9,7 @@ export function middleware(req: NextRequest) {
 
   // Redirect unauthenticated users to the login page
   if (!token && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   // Optional: Add role-specific access control
@@ -20,7 +20,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/", req.url));
   }
   if (pathname.startsWith("/dashboard/admin") && role !== "Admin") {
-    return NextResponse.redirect(new URL("/logi", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();

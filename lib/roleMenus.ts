@@ -1,5 +1,5 @@
 // lib/roleMenus.ts
-import { Frame, PieChart, Settings2, Bot, BookOpen, Ship, User, ClipboardList, Calendar, Users } from "lucide-react";
+import { Frame, PieChart, Settings2, Bot, BookOpen, Ship, User, ClipboardList, Calendar, Users, FilePlus } from "lucide-react";
 
 export type MenuItem = {
   title: string;
@@ -20,9 +20,9 @@ export const roleMenus: RoleMenus = {
       url: "/dashboard/b2b",
       icon: Frame,
       items: [
-        { title: "Skipper", url: "/dashboard/b2b/skipper", icon: User },
+        { title: "Skipper", url: "/dashboard/b2b/", icon: User },
         { title: "Boats", url: "/dashboard/b2b/boats", icon: Ship },
-
+        { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus }
       ],
     },
     {
@@ -50,8 +50,8 @@ export const roleMenus: RoleMenus = {
       url: "/dashboard/concierge",
       icon: Bot,
       items: [
-        { title: "Find Boats", url: "/dashboard/concierge/search/boats", icon: Ship },
-        { title: "Find B2B", url: "/dashboard/concierge/search/b2b", icon: User },
+        { title: "Find Boats", url: "/dashboard/concierge/", icon: Ship },
+        { title: "Find B2B", url: "/dashboard/concierge/", icon: User },
       ],
     },
     {

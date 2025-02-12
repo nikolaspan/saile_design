@@ -1,0 +1,28 @@
+{
+  "requests": [
+    {
+      "id": 1,
+      "boatId": 1,
+      "charterType": "Full Day",
+      "itineraryName": "Luxury Cruise",
+      "requester": "John Doe",
+      "date": "2025-02-10",
+      "time": "10:00 AM",
+      "hotel": "Hotel 1",
+      "status": "Pending",
+      "declineReason": ""
+    },
+    {
+      "id": 2,
+      "boatId": 2,
+      "charterType": "VIP Transfer",
+      "itineraryName": "Business Transfer",
+      "requester": "Alice Smith",
+      "date": "2025-02-15",
+      "time": "3:30 PM",
+      "hotel": "Hotel 2",
+      "status": "Pending",
+      "declineReason": ""
+    }
+  ]
+}

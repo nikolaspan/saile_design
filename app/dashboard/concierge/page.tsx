@@ -5,7 +5,7 @@ import Calendar from "@/components/concierge/Calendar";
 
 export default function ConciergeDashboard() {
   const role = "Concierge"; // Replace with dynamic role detection logic
-
+  
   return (
     <DashboardLayout role={role}>
       <div className="space-y-6">
