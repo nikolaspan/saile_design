@@ -27,20 +27,20 @@ export const roleMenus: RoleMenus = {
     },
     {
       title: "Analytics",
-      url: "/dashboard/b2b/analytics",
+      url: "/dashboard/b2b/",
       icon: PieChart,
       items: [
-        { title: "Overview", url: "/dashboard/b2b/overview", icon: Calendar },
-        { title: "Bookings", url: "/dashboard/b2b/bookings", icon: Users, isActive: true },
+        { title: "Overview", url: "/dashboard/b2b", icon: Calendar },
+        { title: "Bookings", url: "/dashboard/b2b", icon: Users, isActive: true },
       ],
     },
     {
       title: "Settings",
-      url: "/dashboard/b2b/settings",
+      url: "/dashboard/b2b",
       icon: Settings2,
       items: [
-        { title: "Profile", url: "/dashboard/b2b/settings/profile", icon: User },
-        { title: "Options", url: "/dashboard/b2b/settings/options", icon: Settings2 },
+        { title: "Profile", url: "/dashboard/b2b", icon: User },
+        { title: "Options", url: "/dashboard/b2b", icon: Settings2 },
       ],
     },
   ],
