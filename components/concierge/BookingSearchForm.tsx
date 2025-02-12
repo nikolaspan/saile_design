@@ -77,6 +77,7 @@ const BookingSearchForm: React.FC<BookingSearchFormProps> = ({
               <SelectItem value="Full-day">Full-day</SelectItem>
               <SelectItem value="Half-day">Half-day</SelectItem>
               <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
+              <SelectItem value="Sunset Cruise">Sunset Cruise</SelectItem>
             </SelectContent>
           </Select>
         </div>

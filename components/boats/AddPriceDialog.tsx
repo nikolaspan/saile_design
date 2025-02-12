@@ -101,6 +101,7 @@ export default function AddPriceDialog({
                 <SelectItem value="Half Day">Half Day</SelectItem>
                 <SelectItem value="Full Day">Full Day</SelectItem>
                 <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
+                <SelectItem value="Sunset Cruise">Sunset Cruise</SelectItem>
               </SelectContent>
             </Select>
           </div>

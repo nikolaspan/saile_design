@@ -38,7 +38,7 @@ export default function CalendarPage() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 w-full">
       {/* Calendar Section */}
-      <Card className="w-full max-w-[750px]"> 
+      <Card className="w-full max-w-[750px]">
         <CardHeader>
           <CardTitle>Trips Calendar</CardTitle>
         </CardHeader>
@@ -55,7 +55,7 @@ export default function CalendarPage() {
               tripDays: "bg-blue-500 text-white rounded-full",
               selected: "bg-blue-500 dark:bg-blue-400 text-white font-bold",
             }}
-            className="w-full h-[450px] max-w-[600px]" 
+            className="w-full h-[450px] max-w-[600px]"
           />
         </CardContent>
       </Card>
@@ -85,7 +85,7 @@ export default function CalendarPage() {
             ) : (
               <div className="text-center">
                 <p className="0">No trips on this date.</p>
-                <Link href="/dashboard/concierge/bookings/new">
+                <Link href={`/dashboard/concierge/bookings/new?date=${formattedDate}`}>
                   <Button variant="secondary" className="mt-4 px-4 py-2">
                     Book Now
                   </Button>

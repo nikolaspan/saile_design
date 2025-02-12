@@ -13,7 +13,7 @@ import { itineraries } from "./data";
 export default function ItineraryTable() {
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Luxury Add-ons</h2>
+      <h2 className="text-xl font-semibold mb-4">Itinerary List</h2>
       <div className="border rounded-lg shadow-md overflow-hidden">
         <div className="max-h-72 overflow-y-auto">
           <Table>

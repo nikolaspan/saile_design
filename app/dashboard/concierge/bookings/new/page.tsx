@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../../../layouts/DashboardLayout";
 import BookingSearchForm from "@/components/concierge/BookingSearchForm";
 import BoatSelection, { Boat } from "@/components/concierge/BoatSelection";
@@ -23,6 +23,15 @@ export default function NewBookingPage() {
   const [passengers, setPassengers] = useState<PassengerInfo[]>([]);
   const [selectedItinerary, setSelectedItinerary] = useState<ItineraryOption[]>([]);
   const [hour, setHour] = useState<string>("");
+
+  // Retrieve the date from the query string
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedDate = urlParams.get("date");
+    if (selectedDate) {
+      setDate(new Date(selectedDate));
+    }
+  }, []);
 
   // Step 1: Search for available boats  
   const handleSearch = () => {
