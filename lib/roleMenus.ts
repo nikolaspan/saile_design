@@ -30,7 +30,7 @@ export const roleMenus: RoleMenus = {
       url: "/dashboard/b2b/",
       icon: PieChart,
       items: [
-        { title: "Overview", url: "/dashboard/b2b", icon: Calendar },
+        { title: "Overview", url: "/dashboard/b2b/analytics", icon: Calendar },
         { title: "Bookings", url: "/dashboard/b2b", icon: Users, isActive: true },
       ],
     },
