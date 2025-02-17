@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { SidebarProvider, useSidebar } from '@/components/sidebar-context'; // Import sidebar context directly
+import React, { useEffect } from 'react';
+import { SidebarProvider, useSidebar } from '@/components/sidebar-context';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ModeToggle } from '@/components/ui/mode-toggle';
@@ -15,7 +15,7 @@ import {
 import { roleMenus } from '@/lib/roleMenus';
 import { useRouter } from 'next/navigation';
 
-// Minimal SidebarTrigger component (replacing the removed index.tsx)
+// Minimal SidebarTrigger using the sidebar context directly
 const SidebarTrigger = ({ className }: { className?: string }) => {
   const { openSidebar } = useSidebar();
   return (
@@ -33,11 +33,23 @@ interface LayoutProps {
 export default function Layout({ children, role }: LayoutProps) {
   const router = useRouter();
 
+  // Set a CSS variable to accurately represent viewport height
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
+
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-screen overflow-hidden">
+      {/* Use the CSS variable for minimum height on mobile */}
+      <div className="flex min-h-[calc(var(--vh)*100)] w-screen overflow-hidden">
         <AppSidebar role={role} />
-        <div className="flex flex-col flex-1 h-full min-h-0">
+        <div className="flex flex-col flex-1 min-h-full min-w-0">
           <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
             <div className="flex items-center space-x-4">
               <SidebarTrigger className="w-12 h-12" />
@@ -70,7 +82,7 @@ export default function Layout({ children, role }: LayoutProps) {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto h-full p-4 pb-16">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4 pb-16">{children}</main>
         </div>
       </div>
     </SidebarProvider>
