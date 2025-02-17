@@ -7,17 +7,19 @@ import BoatSelection, { Boat } from "@/components/concierge/BoatSelection";
 import PassengerForm, { PassengerInfo, ItineraryOption } from "@/components/concierge/PassengerForm";
 import { format } from "date-fns";
 
-// Import boat data from the JSON file and cast it to Boat[]
+// Import boat data
 import boatsData from "@/components/concierge/boats.json";
 const allBoats = boatsData.boats as unknown as Boat[];
+
+// Import email configuration
 
 export default function NewBookingPage() {
   const role = "Concierge";
   const [step, setStep] = useState<number>(1);
   const [destination, setDestination] = useState<string>("");
   const [passengerCount, setPassengerCount] = useState<number>(0);
-  const [date, setDate] = useState<Date | null>(null); // Chosen day as Date
-  const [tripType, setTripType] = useState<string>("Full-day"); // New state for trip type
+  const [date, setDate] = useState<Date | null>(null);
+  const [tripType, setTripType] = useState<string>("Full-day");
   const [filteredBoats, setFilteredBoats] = useState<Boat[]>([]);
   const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
   const [passengers, setPassengers] = useState<PassengerInfo[]>([]);
@@ -52,7 +54,6 @@ export default function NewBookingPage() {
   // Step 2: Boat selection
   const handleBoatSelect = (boat: Boat) => {
     setSelectedBoat(boat);
-    // Update initialization to use keys that match PassengerInfo:
     setPassengers(
       Array.from({ length: passengerCount }, () => ({ fullName: "", idNumber: "", birth: "" }))
     );
@@ -71,10 +72,8 @@ export default function NewBookingPage() {
     setPassengers(newPassengers);
   };
 
-  // Updated onItineraryChange callback that matches the expected signature.
   const handleItineraryChange = (option: ItineraryOption, checked: boolean) => {
     if (checked) {
-      // Add the option if it is checked and not already selected.
       setSelectedItinerary((prev) => {
         if (prev.some((item) => item.name === option.name)) {
           return prev;
@@ -82,13 +81,42 @@ export default function NewBookingPage() {
         return [...prev, option];
       });
     } else {
-      // Remove the option if unchecked.
       setSelectedItinerary((prev) =>
         prev.filter((item) => item.name !== option.name)
       );
     }
   };
 
+  // Function to submit the booking and send an email
+  const handleSubmit = async () => {
+    if (!selectedBoat || !date) return;
+  
+    const bookingDetails = {
+      passengers,
+      selectedItinerary,
+      hour,
+      selectedBoat,
+      date: format(date, "yyyy-MM-dd"),
+    };
+  
+    try {
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingDetails),
+      });
+  
+      if (response.ok) {
+        console.log("Booking submitted & emails sent successfully!");
+      } else {
+        console.error("Email sending failed.");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  };
+  
+  
   return (
     <DashboardLayout role={role}>
       <div className="p-6 space-y-6">
@@ -100,8 +128,8 @@ export default function NewBookingPage() {
             setPassengerCount={setPassengerCount}
             date={date}
             setDate={setDate}
-            tripType={tripType} // Passing new prop
-            setTripType={setTripType} // Passing setter for trip type
+            tripType={tripType}
+            setTripType={setTripType}
             onSearch={handleSearch}
           />
         )}
@@ -110,7 +138,7 @@ export default function NewBookingPage() {
           <BoatSelection
             boats={filteredBoats}
             destination={destination}
-            tripType={tripType} // Pass the tripType here
+            tripType={tripType}
             onBoatSelect={handleBoatSelect}
             onBack={() => setStep(1)}
           />
@@ -126,10 +154,7 @@ export default function NewBookingPage() {
             selectedItinerary={selectedItinerary}
             hour={hour}
             setHour={setHour}
-            onSubmit={() => {
-              // TODO: Implement booking submission
-              console.log("Booking submitted", { passengers, selectedItinerary, hour });
-            }}
+            onSubmit={handleSubmit} // Call handleSubmit here
             onItineraryChange={handleItineraryChange}
           />
         )}

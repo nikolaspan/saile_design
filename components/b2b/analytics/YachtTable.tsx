@@ -29,154 +29,134 @@ export interface YachtData {
   priceVATAndFuelIncluded: string;
   ezSailSeaServicesCommission: string;
   final: string;
+  numberOfPassengers: string;
 }
 
-// List of keys which should be treated as numeric (doubles)
-const numericKeys: (keyof YachtData)[] = [
-  "netBoatRentalWithoutCommission",
-  "commission",
-  "netBoatRentalWithoutVAT",
-  "vat24",
-  "boatRentalDay",
-  "fuelCost",
-  "priceVATAndFuelIncluded",
-  "ezSailSeaServicesCommission",
-  "final",
-];
-
-// Helper function: remove non-numeric characters and parse as a double.
-const parseCurrency = (value: string): number => {
-  const cleaned = value.replace(/[^0-9.-]+/g, "");
-  return parseFloat(cleaned);
+// Helper: Convert a date from DD-MM-YYYY to ISO (YYYY-MM-DD) for filtering.
+const convertDateForFiltering = (dateStr: string): string => {
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const [day, month, year] = parts;
+  return `${year}-${month}-${day}`;
 };
 
-// Assert the imported JSON as YachtData[]
-const yachtData: YachtData[] = (Array.isArray(data) ? data : [data]) as YachtData[];
+// (Optional) Helper: Format a date from ISO (YYYY-MM-DD) to DD-MM-YYYY for display.
 
-// CSV export helper function.
+// Helper: Normalize numeric strings ensuring two decimals.
+const normalizeNumber = (value: string | null | undefined): string => {
+  if (!value) return "0.00";
+  const normalized = value.toString().replace(",", ".").replace(/[^0-9.]/g, "");
+  const num = parseFloat(normalized);
+  return isNaN(num) ? "0.00" : num.toFixed(2);
+};
+
+// Map the imported JSON to ensure correct type casting for charterType.
+const yachtData: YachtData[] = (Array.isArray(data) ? data : [data]).map(item => ({
+  ...item,
+  charterType: item.charterType as YachtData["charterType"],
+}));
+
+// CSV export helper.
 const exportToCSV = (exportData: YachtData[]) => {
-  const headers = [
-    "Date",
-    "Boat Name",
-    "Charter Type",
-    "Charter Name",
-    "Net Boat Rental without Commission",
-    "Commission",
-    "Net Boat Rental without VAT",
-    "VAT 24%",
-    "Boat Rental/Day",
-    "Fuel Cost",
-    "Price VAT & Fuel Included",
-    "EzSail Sea Services Commission",
-    "Final",
+  // Define header mapping with keys typed as keyof YachtData.
+  const headers: { label: string; key: keyof YachtData }[] = [
+    { label: "Date", key: "date" },
+    { label: "Boat Name", key: "boatName" },
+    { label: "Charter Type", key: "charterType" },
+    { label: "Charter Name", key: "charterName" },
+    { label: "Net Boat Rental without Commission", key: "netBoatRentalWithoutCommission" },
+    { label: "Commission", key: "commission" },
+    { label: "Net Boat Rental without VAT", key: "netBoatRentalWithoutVAT" },
+    { label: "VAT 24%", key: "vat24" },
+    { label: "Boat Rental/Day", key: "boatRentalDay" },
+    { label: "Fuel Cost", key: "fuelCost" },
+    { label: "Price VAT & Fuel Included", key: "priceVATAndFuelIncluded" },
+    { label: "EzSail Sea Services Commission", key: "ezSailSeaServicesCommission" },
+    { label: "Final", key: "final" },
+    { label: "Number of Passengers", key: "numberOfPassengers" },
   ];
 
-  const rows = exportData.map((row) =>
-    headers.map((header) => {
-      // Map header names to the corresponding field key.
-      let key: keyof YachtData;
-      switch (header) {
-        case "Date":
-          key = "date";
-          break;
-        case "Boat Name":
-          key = "boatName";
-          break;
-        case "Charter Type":
-          key = "charterType";
-          break;
-        case "Charter Name":
-          key = "charterName";
-          break;
-        case "Net Boat Rental without Commission":
-          key = "netBoatRentalWithoutCommission";
-          break;
-        case "Commission":
-          key = "commission";
-          break;
-        case "Net Boat Rental without VAT":
-          key = "netBoatRentalWithoutVAT";
-          break;
-        case "VAT 24%":
-          key = "vat24";
-          break;
-        case "Boat Rental/Day":
-          key = "boatRentalDay";
-          break;
-        case "Fuel Cost":
-          key = "fuelCost";
-          break;
-        case "Price VAT & Fuel Included":
-          key = "priceVATAndFuelIncluded";
-          break;
-        case "EzSail Sea Services Commission":
-          key = "ezSailSeaServicesCommission";
-          break;
-        case "Final":
-          key = "final";
-          break;
-        default:
-          key = "date"; // fallback (should not occur)
-      }
-      const value = row[key];
-      // If the field is numeric, convert it to a double string.
-      if (numericKeys.includes(key)) {
-        const num = parseCurrency(value);
-        return num.toFixed(2);
-      }
-      return value;
-    })
-  );
+  // Build CSV rows.
+  const csvRows: string[] = [];
+  // Create header row with quotes.
+  csvRows.push(headers.map(h => `"${h.label}"`).join(","));
 
-  const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+  exportData.forEach(row => {
+    const rowArray = headers.map(h => {
+      let cell = row[h.key];
+      // Normalize numeric fields
+      if (
+        [
+          "netBoatRentalWithoutCommission",
+          "commission",
+          "netBoatRentalWithoutVAT",
+          "vat24",
+          "boatRentalDay",
+          "fuelCost",
+          "priceVATAndFuelIncluded",
+          "ezSailSeaServicesCommission",
+          "final",
+        ].includes(h.key)
+      ) {
+        cell = normalizeNumber(cell);
+      }
+      return `"${cell}"`;
+    });
+    csvRows.push(rowArray.join(","));
+  });
+
+  const csvContent = csvRows.join("\n");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.setAttribute("download", "data.csv");
+  link.setAttribute("download", "yacht_data.csv");
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
 
 export function YachtTable() {
-  // Filter states.
+  // Filter state.
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [boatNameFilter, setBoatNameFilter] = useState("");
 
   // Filter the data by date and boat name.
-  const filteredData = yachtData.filter((row) => {
+  const filteredData = yachtData.filter(row => {
     const matchesBoatName =
       boatNameFilter === "" ||
       row.boatName.toLowerCase().includes(boatNameFilter.toLowerCase());
 
     let matchesDate = true;
-    if (startDate && endDate) {
-      matchesDate = row.date >= startDate && row.date <= endDate;
-    } else if (startDate) {
-      matchesDate = row.date === startDate;
-    } else if (endDate) {
-      matchesDate = row.date === endDate;
+    if (startDate || endDate) {
+      const rowDateISO = convertDateForFiltering(row.date);
+      if (startDate && endDate) {
+        matchesDate = rowDateISO >= startDate && rowDateISO <= endDate;
+      } else if (startDate) {
+        matchesDate = rowDateISO === startDate;
+      } else if (endDate) {
+        matchesDate = rowDateISO === endDate;
+      }
     }
     return matchesBoatName && matchesDate;
   });
 
   return (
-    <Card>
+    <Card className="m-4">
       <CardHeader>
         <h2 className="text-xl font-semibold">Analytics Table</h2>
       </CardHeader>
       <CardContent>
-        {/* Filter controls */}
-        <div className="mb-4 flex flex-wrap items-center gap-4">
+        {/* Filter Controls */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium">Start Date:</label>
             <Input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-auto"
+              onChange={e => setStartDate(e.target.value)}
+              className="w-full sm:w-auto"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -184,8 +164,8 @@ export function YachtTable() {
             <Input
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-auto"
+              onChange={e => setEndDate(e.target.value)}
+              className="w-full sm:w-auto"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -194,16 +174,18 @@ export function YachtTable() {
               type="text"
               placeholder="Filter by Boat Name"
               value={boatNameFilter}
-              onChange={(e) => setBoatNameFilter(e.target.value)}
-              className="w-auto"
+              onChange={e => setBoatNameFilter(e.target.value)}
+              className="w-full sm:w-auto"
             />
           </div>
-          <Button onClick={() => exportToCSV(filteredData)}>Export CSV</Button>
+          <div className="mt-2 sm:mt-0">
+            <Button onClick={() => exportToCSV(filteredData)}>Export CSV</Button>
+          </div>
         </div>
 
-        {/* Scrollable table */}
+        {/* Responsive Table */}
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-full text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
@@ -219,6 +201,7 @@ export function YachtTable() {
                 <TableHead>Price VAT & Fuel Included</TableHead>
                 <TableHead>EzSail Sea Services Commission</TableHead>
                 <TableHead>Final</TableHead>
+                <TableHead>Number of Passengers</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -228,15 +211,16 @@ export function YachtTable() {
                   <TableCell>{row.boatName}</TableCell>
                   <TableCell>{row.charterType}</TableCell>
                   <TableCell>{row.charterName}</TableCell>
-                  <TableCell>{row.netBoatRentalWithoutCommission}</TableCell>
-                  <TableCell>{row.commission}</TableCell>
-                  <TableCell>{row.netBoatRentalWithoutVAT}</TableCell>
-                  <TableCell>{row.vat24}</TableCell>
-                  <TableCell>{row.boatRentalDay}</TableCell>
-                  <TableCell>{row.fuelCost}</TableCell>
-                  <TableCell>{row.priceVATAndFuelIncluded}</TableCell>
-                  <TableCell>{row.ezSailSeaServicesCommission}</TableCell>
-                  <TableCell>{row.final}</TableCell>
+                  <TableCell>{normalizeNumber(row.netBoatRentalWithoutCommission)}</TableCell>
+                  <TableCell>{normalizeNumber(row.commission)}</TableCell>
+                  <TableCell>{normalizeNumber(row.netBoatRentalWithoutVAT)}</TableCell>
+                  <TableCell>{normalizeNumber(row.vat24)}</TableCell>
+                  <TableCell>{normalizeNumber(row.boatRentalDay)}</TableCell>
+                  <TableCell>{normalizeNumber(row.fuelCost)}</TableCell>
+                  <TableCell>{normalizeNumber(row.priceVATAndFuelIncluded)}</TableCell>
+                  <TableCell>{normalizeNumber(row.ezSailSeaServicesCommission)}</TableCell>
+                  <TableCell>{normalizeNumber(row.final)}</TableCell>
+                  <TableCell>{row.numberOfPassengers}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
