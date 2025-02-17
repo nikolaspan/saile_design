@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub, // Import the proper sub-menu component
 } from "@/components/ui/sidebar";
 import { roleMenus, MenuItem } from "@/lib/roleMenus";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,10 +24,8 @@ interface AppSidebarProps {
  */
 function renderMenuItems(items: MenuItem[], currentPath: string) {
   return items.map((item) => {
-    const isActive =
-      currentPath === item.url || currentPath.startsWith(item.url);
     return (
-      <SidebarMenuItem key={item.title} className={isActive ? "" : ""}>
+      <SidebarMenuItem key={item.title}>
         <SidebarMenuButton asChild>
           <Link href={item.url} className="flex items-center space-x-2 p-2">
             {item.icon && <item.icon className="w-6 h-6" />}
@@ -34,9 +33,10 @@ function renderMenuItems(items: MenuItem[], currentPath: string) {
           </Link>
         </SidebarMenuButton>
         {item.items && (
-          <div className="ml-6 mt-1 space-y-1">
+          // Wrap nested menu items in a <ul> via SidebarMenuSub instead of a <div>
+          <SidebarMenuSub className="ml-6 mt-1 space-y-1">
             {renderMenuItems(item.items, currentPath)}
-          </div>
+          </SidebarMenuSub>
         )}
       </SidebarMenuItem>
     );
@@ -60,7 +60,9 @@ export function AppSidebar({ role }: AppSidebarProps) {
             <span className="text-lg font-medium capitalize">{role}</span>
           </div>
           <SidebarGroupContent>
-            <SidebarMenu>{renderMenuItems(menuItems, pathname)}</SidebarMenu>
+            <SidebarMenu>
+              {renderMenuItems(menuItems, pathname)}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

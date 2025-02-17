@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { Bell, LogOut } from "lucide-react"; // ✅ Import icons for notification & logout
+import { Bell, LogOut } from "lucide-react"; 
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { roleMenus } from "@/lib/roleMenus";
-import { useRouter } from "next/navigation"; // ✅ Import router for logout action
+import { useRouter } from "next/navigation"; 
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, role }: LayoutProps) {
-  const router = useRouter(); // ✅ Hook for navigation
+  const router = useRouter(); 
 
   return (
     <SidebarProvider>
