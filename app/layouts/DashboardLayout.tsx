@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { Bell, LogOut } from "lucide-react"; 
+import React from 'react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/app-sidebar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ModeToggle } from '@/components/ui/mode-toggle';
+import { Bell, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { roleMenus } from "@/lib/roleMenus";
-import { useRouter } from "next/navigation"; 
+} from '@/components/ui/dropdown-menu';
+import { roleMenus } from '@/lib/roleMenus';
+import { useRouter } from 'next/navigation';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, role }: LayoutProps) {
-  const router = useRouter(); 
+  const router = useRouter();
 
   return (
     <SidebarProvider>
@@ -34,15 +34,10 @@ export default function Layout({ children, role }: LayoutProps) {
               <h1 className="text-2xl font-bold capitalize">{role} Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
-              {/* ✅ Notification Bell */}
               <button className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                 <Bell className="w-6 h-6" />
               </button>
-
-              {/* ✅ Theme Toggle */}
               <ModeToggle />
-
-              {/* ✅ User Dropdown Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center focus:outline-none">
@@ -55,10 +50,9 @@ export default function Layout({ children, role }: LayoutProps) {
                 <DropdownMenuContent>
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
-                  {/* ✅ Logout button redirects to `/` */}
                   <DropdownMenuItem
                     className="flex items-center text-red-500"
-                    onClick={() => router.push("/")}
+                    onClick={() => router.push('/')}
                   >
                     <LogOut className="w-4 h-4 mr-2" /> Logout
                   </DropdownMenuItem>
