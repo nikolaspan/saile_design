@@ -1,11 +1,24 @@
 // lib/roleMenus.ts
-import { Frame, PieChart, Settings2, Bot, BookOpen, Ship, User, ClipboardList, Calendar, Users, FilePlus } from "lucide-react";
+import {
+  Frame,
+  PieChart,
+  Settings2,
+  Bot,
+  BookOpen,
+  Ship,
+  User,
+  ClipboardList,
+  Calendar,
+  Users,
+  FilePlus,
+} from "lucide-react";
 
 export type MenuItem = {
   title: string;
   url: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   isActive?: boolean;
+  disabled?: boolean; // Added property
   items?: MenuItem[];
 };
 
@@ -22,12 +35,13 @@ export const roleMenus: RoleMenus = {
       items: [
         { title: "Skipper", url: "/dashboard/b2b/", icon: User },
         { title: "Boats", url: "/dashboard/b2b/boats", icon: Ship },
-        { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus }
+        { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus },
       ],
     },
     {
       title: "Analytics",
       url: "/dashboard/b2b/",
+      disabled: true, // This item is disabled
       icon: PieChart,
       items: [
         { title: "Overview", url: "/dashboard/b2b/analytics", icon: Calendar },
@@ -37,10 +51,11 @@ export const roleMenus: RoleMenus = {
     {
       title: "Settings",
       url: "/dashboard/b2b",
+      disabled: true, // This item is disabled
       icon: Settings2,
       items: [
-        { title: "Profile", url: "/dashboard/b2b", icon: User },
-        { title: "Options", url: "/dashboard/b2b", icon: Settings2 },
+        { title: "Profile", url: "/dashboard/b2b", icon: User, disabled: true },
+        { title: "Options", url: "/dashboard/b2b", icon: Settings2, disabled: true },
       ],
     },
   ],
@@ -50,8 +65,8 @@ export const roleMenus: RoleMenus = {
       url: "/dashboard/concierge",
       icon: Bot,
       items: [
-        { title: "Find Boats", url: "/dashboard/concierge/", icon: Ship },
-        { title: "Find B2B", url: "/dashboard/concierge/", icon: User },
+        { title: "Find Boats", url: "/dashboard/concierge/", icon: Ship, disabled: true },
+        { title: "Find B2B", url: "/dashboard/concierge/", icon: User, disabled: true },
       ],
     },
     {

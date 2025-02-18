@@ -6,7 +6,6 @@ import { useSidebar } from '@/components/sidebar-context'; // Import sidebar con
 import { roleMenus, MenuItem } from '@/lib/roleMenus';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-// Minimal sidebar UI components (replacing the removed index.tsx)
 const Sidebar = ({
   children,
   className,
@@ -60,14 +59,20 @@ interface AppSidebarProps {
  */
 function renderMenuItems(items: MenuItem[], currentPath: string) {
   return items.map((item) => {
-    const isActive = currentPath === item.url || currentPath.startsWith(item.url);
     return (
-      <SidebarMenuItem key={item.title} className={isActive ? '' : ''}>
+      <SidebarMenuItem key={item.title}>
         <SidebarMenuButton>
-          <Link href={item.url} className="flex items-center space-x-2 p-2">
-            {item.icon && <item.icon className="w-6 h-6" />}
-            <span>{item.title}</span>
-          </Link>
+          {item.disabled ? (
+            <span className="flex items-center space-x-2 p-2 cursor-not-allowed opacity-50">
+              {item.icon && <item.icon className="w-6 h-6" />}
+              <span>{item.title}</span>
+            </span>
+          ) : (
+            <Link href={item.url} className="flex items-center space-x-2 p-2 hover:underline">
+              {item.icon && <item.icon className="w-6 h-6" />}
+              <span>{item.title}</span>
+            </Link>
+          )}
         </SidebarMenuButton>
         {item.items && (
           <SidebarMenuSub className="ml-6 mt-1 space-y-1">
@@ -89,14 +94,14 @@ export function AppSidebar({ role }: AppSidebarProps) {
       {/* Mobile overlay */}
       <div
         className={`fixed inset-0 bg-black z-40 transition-opacity duration-300 md:hidden ${
-          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={closeSidebar}
       />
 
       <Sidebar
         className={`h-full w-64 border-r border-gray-200 flex-shrink-0 fixed z-50 transform transition-transform duration-300 ease-in-out 
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
           md:static md:translate-x-0`}
       >
         <SidebarContent>
