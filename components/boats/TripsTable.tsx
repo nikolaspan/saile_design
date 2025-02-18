@@ -71,7 +71,7 @@ export default function TripsTable() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Charter Itinerary</h2>
+      <h2 className="text-xl font-semibold">Charters</h2>
 
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-4">
@@ -97,9 +97,9 @@ export default function TripsTable() {
 
         {/* Itinerary Name Search */}
         <div className="flex flex-col">
-          <span className="mb-1 text-sm font-medium">Charter Itinerary Name</span>
+          <span className="mb-1 text-sm font-medium">Charter Itinerary</span>
           <Input
-            placeholder="Search Itinerary Name"
+            placeholder="Search Charter Itinerary"
             className="w-64"
             value={itineraryFilter}
             onChange={(e) => setItineraryFilter(e.target.value)}
@@ -168,7 +168,7 @@ export default function TripsTable() {
             <TableHeader className="sticky top-0 z-10 shadow-md">
               <TableRow>
                 <TableHead className="text-left">Charter Type</TableHead>
-                <TableHead className="text-left">Charter Itinerary Name</TableHead>
+                <TableHead className="text-left">Charter Itinerary </TableHead>
                 <TableHead className="text-left">Date</TableHead>
                 <TableHead className="text-left">Status</TableHead>
               </TableRow>

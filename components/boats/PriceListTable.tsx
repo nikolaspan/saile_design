@@ -87,9 +87,9 @@ export default function PriceListTable() {
 
         {/* Itinerary Name Search */}
         <div className="flex flex-col">
-          <Label className="mb-1">Charter Itinerary Name</Label>
+          <Label className="mb-1">Charter Itinerary </Label>
           <Input
-            placeholder="Search Charter Itinerary Name"
+            placeholder="Search Charter Itinerary"
             className="w-64"
             value={itineraryFilter}
             onChange={(e) => setItineraryFilter(e.target.value)}
@@ -121,7 +121,7 @@ export default function PriceListTable() {
             <TableHeader className="sticky top-0 z-10">
               <TableRow>
                 <TableHead className="text-left">Charter Type</TableHead>
-                <TableHead className="text-left">Charter Itinerary Name</TableHead>
+                <TableHead className="text-left">Charter Itinerary </TableHead>
                 <TableHead className="text-right">Rental Price (€)</TableHead>
                 <TableHead className="text-right">Commission (€)</TableHead>
                 <TableHead className="text-right">Fuel Cost (€)</TableHead>

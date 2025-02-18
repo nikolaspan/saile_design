@@ -25,11 +25,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required booking details" }, { status: 400 });
     }
 
+    // Use a fallback if selectedItinerary is undefined
+    const itineraryList = (selectedItinerary ?? []) as any[];
+
     // Format email content
     const emailText = `
       📢 **New Booking Alert** 📢
 
-      ✅ **Boat:** ${selectedBoat.name}
+      🛥️**Boat:** ${selectedBoat.name}
       📅 **Date:** ${date}
       ⏰ **Hour:** ${hour || "Not specified"}
 
@@ -37,9 +40,9 @@ export async function POST(request: Request) {
       ${passengers.map((p: any, i: number) => ` ${i + 1}. ${p.fullName} (ID: ${p.idNumber})`).join("\n")}
 
       🏝️ **Itinerary:**
-      ${selectedItinerary.length > 0 ? selectedItinerary.map((item: any) => ` - ${item.name}`).join("\n") : "No itinerary selected"}
+      ${itineraryList.length > 0 ? itineraryList.map((item: any) => ` - ${item.name}`).join("\n") : "No itinerary selected"}
 
-      🚀 Thank you for choosing Sail-E!
+       Thank you for choosing Sail-E!
     `;
 
     // Send email to all recipients
@@ -51,7 +54,6 @@ export async function POST(request: Request) {
       html: `<pre>${emailText}</pre>`, // HTML formatted version
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ message: "Booking email sent successfully!" });
