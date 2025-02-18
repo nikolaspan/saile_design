@@ -15,7 +15,7 @@ import {
 import { roleMenus } from '@/lib/roleMenus';
 import { useRouter } from 'next/navigation';
 
-// Minimal SidebarTrigger using the sidebar context directly
+//Trigger
 const SidebarTrigger = ({ className }: { className?: string }) => {
   const { openSidebar } = useSidebar();
   return (
