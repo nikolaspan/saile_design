@@ -25,6 +25,7 @@ export type Boat = {
   type: string;
   length: number;
   capacity: number;
+  hotel: string; // Added hotel field
 };
 
 type AddBoatDialogProps = {
@@ -37,12 +38,13 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
     type: "Catamaran",
     length: 0,
     capacity: 0,
+    hotel: "Seaside Resort", // Default hotel
   });
 
   const handleAddBoat = () => {
-    if (!newBoat.name || newBoat.length <= 0 || newBoat.capacity <= 0) return;
+    if (!newBoat.name || newBoat.length <= 0 || newBoat.capacity <= 0 || !newBoat.hotel) return;
     onAdd(newBoat);
-    setNewBoat({ name: "", type: "Catamaran", length: 0, capacity: 0 });
+    setNewBoat({ name: "", type: "Catamaran", length: 0, capacity: 0, hotel: "Seaside Resort" });
   };
 
   return (
@@ -99,6 +101,22 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
               setNewBoat({ ...newBoat, capacity: Number(e.target.value) })
             }
           />
+          <Label>Hotel</Label>
+          <Select
+            value={newBoat.hotel}
+            onValueChange={(value) => setNewBoat({ ...newBoat, hotel: value })}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Hotel" />
+            </SelectTrigger>
+            <SelectContent>
+              {["Seaside Resort", "Mountain View Lodge"].map((hotel) => (
+                <SelectItem key={hotel} value={hotel}>
+                  {hotel}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={handleAddBoat} variant="default" className="w-full">
             Add Boat
           </Button>

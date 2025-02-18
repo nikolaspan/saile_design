@@ -14,6 +14,7 @@ const localBoatsData: Boat[] = [
     type: "Yacht",
     length: 50,
     capacity: 10,
+    hotel: "Seaside Resort",
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ const localBoatsData: Boat[] = [
     type: "Catamaran",
     length: 40,
     capacity: 8,
+    hotel: "Mountain View Lodge",
   },
 ];
 
@@ -31,6 +33,7 @@ const foreignBoatsData: Boat[] = [
     type: "Monohull",
     length: 60,
     capacity: 12,
+    hotel: "Seaside Resort",
   },
   {
     id: 102,
@@ -38,6 +41,7 @@ const foreignBoatsData: Boat[] = [
     type: "RIB",
     length: 30,
     capacity: 6,
+    hotel: "Mountain View Lodge",
   },
 ];
 
@@ -56,23 +60,42 @@ export default function BoatsPage() {
         <div className="flex justify-end">
           <AddBoatDialog onAdd={handleAddLocalBoat} />
         </div>
+
+        {/* LOCAL BOATS */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Boats</CardTitle>
+            <CardTitle>Local Boats</CardTitle>
           </CardHeader>
           <CardContent>
-            <BoatsTable boats={localBoats} title="Your Boats List" />
+            <BoatsTable
+              boats={localBoats.filter((boat) => boat.hotel === "Seaside Resort")}
+              title="Seaside Resort Boats"
+            />
+            <BoatsTable
+              boats={localBoats.filter((boat) => boat.hotel === "Mountain View Lodge")}
+              title="Mountain View Lodge Boats"
+            />
           </CardContent>
         </Card>
+
+        {/* FOREIGN BOATS */}
         <Card>
           <CardHeader>
             <CardTitle>Foreign Boats</CardTitle>
           </CardHeader>
           <CardContent>
-            <BoatsTable boats={foreignBoats} title="Foreign Boats List" />
+            <BoatsTable
+              boats={foreignBoats.filter((boat) => boat.hotel === "Seaside Resort")}
+              title="Seaside Resort Boats"
+            />
+            <BoatsTable
+              boats={foreignBoats.filter((boat) => boat.hotel === "Mountain View Lodge")}
+              title="Mountain View Lodge Boats"
+            />
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
   );
 }
+  

@@ -1,68 +1,79 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import React from "react";
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
   TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
-import { Boat } from "./AddBoatDialog";
+import { useRouter } from "next/navigation";
 
-type BoatsTableProps = {
+export interface Boat {
+  id: number;
+  name: string;
+  type: string;
+  length: number;
+  capacity: number;
+  hotel: string;
+}
+
+interface BoatsTableProps {
   boats: Boat[];
   title: string;
-};
+}
 
 export default function BoatsTable({ boats, title }: BoatsTableProps) {
   const router = useRouter();
 
+  const navigateToBoat = (id: number) => {
+    router.push(`/dashboard/b2b/boats/${id}`);
+  };
+
   return (
-    <div className="mt-6">
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-left px-4 py-2">Boat Name</TableHead>
-              <TableHead className="text-left px-4 py-2">Type</TableHead>
-              <TableHead className="text-right px-4 py-2">Length (ft)</TableHead>
-              <TableHead className="text-right px-4 py-2">Capacity</TableHead>
-              <TableHead className="text-center px-4 py-2">Actions</TableHead>
+    <div className="space-y-4 overflow-x-auto">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <Table className="min-w-full table-fixed">
+        <TableHeader>
+          <TableRow>
+            {/* Removed Hotel column */}
+            <TableHead className="w-1/5">Boat Name</TableHead>
+            <TableHead className="w-1/5">Boat Type</TableHead>
+            <TableHead className="w-1/5">Length (ft)</TableHead>
+            <TableHead className="w-1/5">Capacity</TableHead>
+            <TableHead className="w-1/5">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {boats.map((boat) => (
+            <TableRow
+              key={boat.id}
+              className="cursor-pointer "
+              onClick={() => navigateToBoat(boat.id)}
+            >
+              <TableCell className="w-1/5">{boat.name}</TableCell>
+              <TableCell className="w-1/5">{boat.type}</TableCell>
+              <TableCell className="w-1/5">{boat.length}</TableCell>
+              <TableCell className="w-1/5">{boat.capacity}</TableCell>
+              <TableCell className="w-1/5">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToBoat(boat.id);
+                  }}
+                >
+                  Edit
+                </Button>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {boats.map((boat) => (
-              <TableRow key={boat.id}>
-                <TableCell className="px-4 py-2">{boat.name}</TableCell>
-                <TableCell className="px-4 py-2">{boat.type}</TableCell>
-                <TableCell className="px-4 py-2 text-right">
-                  {boat.length} ft
-                </TableCell>
-                <TableCell className="px-4 py-2 text-right">
-                  {boat.capacity}
-                </TableCell>
-                <TableCell className="px-4 py-2 text-center">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      sessionStorage.setItem("selectedBoatId", boat.id.toString());
-                      router.push(`/dashboard/b2b/boats/${boat.id}`);
-                    }}
-                  >
-                    View <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
