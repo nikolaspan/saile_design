@@ -67,7 +67,7 @@ export default function RequestManagementPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pending Requests</CardTitle>
+            <CardTitle>Pending Requests (Foreign Boats)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-auto max-h-96">

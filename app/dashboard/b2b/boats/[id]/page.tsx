@@ -52,7 +52,7 @@ export default function BoatsPage() {
               <PlusCircle className="mr-2" /> Add Itinerary
             </Button>
             <Button onClick={() => setPriceDialogOpen(true)}>
-              <PlusCircle className="mr-2" /> Add Trip
+              <PlusCircle className="mr-2" /> Add Charter Itinerary
             </Button>
           </div>
         </div>

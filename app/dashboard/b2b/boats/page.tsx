@@ -15,6 +15,7 @@ const localBoatsData: Boat[] = [
     length: 50,
     capacity: 10,
     hotel: "Seaside Resort",
+    origin: "Local"
   },
   {
     id: 2,
@@ -23,6 +24,7 @@ const localBoatsData: Boat[] = [
     length: 40,
     capacity: 8,
     hotel: "Mountain View Lodge",
+    origin: "Local"
   },
 ];
 
@@ -34,6 +36,7 @@ const foreignBoatsData: Boat[] = [
     length: 60,
     capacity: 12,
     hotel: "Seaside Resort",
+    origin: "Local"
   },
   {
     id: 102,
@@ -42,6 +45,7 @@ const foreignBoatsData: Boat[] = [
     length: 30,
     capacity: 6,
     hotel: "Mountain View Lodge",
+    origin: "Local"
   },
 ];
 

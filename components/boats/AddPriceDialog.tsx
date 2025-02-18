@@ -28,7 +28,7 @@ export default function AddPriceDialog({
 }: AddPriceDialogProps) {
   const [newPrice, setNewPrice] = useState({
     charterType: "Half Day", // Default value
-    itineraryName: "",
+    CharteritineraryName: "",
     rentalPriceWithoutCommission: "",
     commission: "",
     fuelCost: "",
@@ -37,7 +37,7 @@ export default function AddPriceDialog({
   const handleAddPrice = () => {
     const {
       charterType,
-      itineraryName,
+      CharteritineraryName,
       rentalPriceWithoutCommission,
       commission,
       fuelCost,
@@ -45,7 +45,7 @@ export default function AddPriceDialog({
 
     if (
       charterType &&
-      itineraryName &&
+      CharteritineraryName &&
       rentalPriceWithoutCommission &&
       commission &&
       fuelCost
@@ -57,7 +57,7 @@ export default function AddPriceDialog({
 
       console.log("New Price:", {
         charterType,
-        itineraryName,
+        CharteritineraryName,
         rentalPriceWithoutCommission: Number(rentalPriceWithoutCommission),
         commission: Number(commission),
         netRental,
@@ -69,7 +69,7 @@ export default function AddPriceDialog({
       // Reset form and close dialog
       setNewPrice({
         charterType: "Half Day", // Reset to default
-        itineraryName: "",
+        CharteritineraryName: "",
         rentalPriceWithoutCommission: "",
         commission: "",
         fuelCost: "",
@@ -108,12 +108,12 @@ export default function AddPriceDialog({
 
           {/* Itinerary Name */}
           <div className="space-y-1">
-            <Label>Itinerary Name</Label>
+            <Label>Charter Itinerary Name</Label>
             <Input
-              placeholder="Itinerary Name"
-              value={newPrice.itineraryName}
+              placeholder="Charter Itinerary Name"
+              value={newPrice.CharteritineraryName}
               onChange={(e) =>
-                setNewPrice({ ...newPrice, itineraryName: e.target.value })
+                setNewPrice({ ...newPrice, CharteritineraryName: e.target.value })
               }
             />
           </div>

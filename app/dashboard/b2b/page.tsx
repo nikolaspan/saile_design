@@ -47,7 +47,7 @@ export default function B2BDashboard() {
                     onClick={() => handleBookingClick(trip.id)}
                   >
                     <span>
-                      {trip.itineraryName} - {trip.charterType}
+                      {trip.itineraryName} - {trip.charterType} - Boat:{trip.boatId}
                     </span>
                     <span className="font-bold text-green-600">
                       €{trip.revenue}
