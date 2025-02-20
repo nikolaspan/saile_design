@@ -27,6 +27,7 @@ interface Trip {
   revenue: number;
   date: string;
   roomId: string;
+  boatId: number;
   passengers: Passenger[];
 }
 
@@ -35,20 +36,21 @@ interface BookingsTableProps {
   trips: Trip[];
 }
 
+const boatNames: { [key: number]: string } = {
+  1: "Ocean Explorer",
+  2: "Sea Voyager",
+};
+
 const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
   const router = useRouter();
 
   const getTripStatus = (trip: Trip, tableTitle: string) => {
-    if (tableTitle === "Canceled Trips")
-      return { status: "Canceled", color: "red" };
-    if (tableTitle === "Requested Trips")
-      return { status: "Requested", color: "yellow" };
+    if (tableTitle === "Canceled Trips") return { status: "Canceled", color: "red" };
+    if (tableTitle === "Requested Trips") return { status: "Requested", color: "yellow" };
 
     const tripDate = new Date(trip.date);
     const today = new Date();
-    return tripDate < today
-      ? { status: "Completed", color: "green" }
-      : { status: "Pending", color: "blue" };
+    return tripDate < today ? { status: "Completed", color: "green" } : { status: "Pending", color: "blue" };
   };
 
   return (
@@ -65,6 +67,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                   <TableHead>Charter Type</TableHead>
                   <TableHead>Itinerary Name</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Boat Name</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -76,15 +79,12 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                       <TableRow
                         key={trip.tripId}
                         className="cursor-pointer"
-                        onClick={() =>
-                          router.push(`/dashboard/concierge/bookings/${trip.tripId}`)
-                        }
+                        onClick={() => router.push(`/dashboard/concierge/bookings/${trip.tripId}`)}
                       >
                         <TableCell>{trip.charterType}</TableCell>
                         <TableCell>{trip.itineraryName}</TableCell>
-                        <TableCell>
-                          {format(parseISO(trip.date), "yyyy-MM-dd")}
-                        </TableCell>
+                        <TableCell>{format(parseISO(trip.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell>{boatNames[trip.boatId] || "Unknown Boat"}</TableCell>
                         <TableCell>
                           <Badge className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}>
                             {status}
@@ -95,7 +95,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-4">
+                    <TableCell colSpan={5} className="text-center py-4">
                       No results found
                     </TableCell>
                   </TableRow>

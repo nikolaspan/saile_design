@@ -18,7 +18,6 @@ interface Passenger {
   birthday: string;
 }
 
-// Define the Trip interface
 interface Trip {
   tripId: string;
   charterType: string;
@@ -26,8 +25,10 @@ interface Trip {
   revenue: number;
   date: string;
   roomId: string;
+  boatId: number; // ✅ Add this line
   passengers: Passenger[];
 }
+
 
 // Define raw types matching the JSON structure
 interface RawPassenger {
@@ -50,19 +51,20 @@ interface RawTripsJson {
   trips: RawTrip[];
 }
 
-// ✅ Ensure correct transformation from `birthId` to `birthday`
+//  Ensure correct transformation from `birthId` to `birthday`
 const unifiedTrips: Trip[] = (tripsData as unknown as RawTripsJson).trips.map((trip: RawTrip) => ({
   tripId: trip.tripId,
   charterType: trip.charterType,
   itineraryName: trip.itineraryName,
   revenue: trip.revenue,
   date: trip.date,
-  roomId: String(trip.boatId),
+  boatId: trip.boatId, // ✅ Ensure this exists
+  roomId: String(trip.boatId), // ❓ Double-check if this mapping is intentional
   passengers: trip.passengers.map((p: RawPassenger) => ({
     passengerId: p.passengerId,
     name: p.name,
-    birthday: p.birthId, // ✅ Ensuring `birthId` is renamed to `birthday`
-  })) as Passenger[], // ✅ Explicitly type passengers as `Passenger[]`
+    birthday: p.birthId, 
+  })) as Passenger[],
 }));
 
 export default function BookingsPage() {

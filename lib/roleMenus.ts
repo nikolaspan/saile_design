@@ -65,7 +65,7 @@ export const roleMenus: RoleMenus = {
       url: "/dashboard/concierge",
       icon: Bot,
       items: [
-        { title: "Find Boats", url: "/dashboard/concierge/", icon: Ship, disabled: true },
+        { title: "Find Boats", url: "/dashboard/concierge/boats", icon: Ship,  },
         { title: "Find B2B", url: "/dashboard/concierge/", icon: User, disabled: true },
       ],
     },
