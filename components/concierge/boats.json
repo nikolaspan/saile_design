@@ -3,27 +3,11 @@
     {
       "boatId": "B-001",
       "name": "Aegean Voyager",
-      "destinations": [
-        "Mykonos",
-        "Santorini",
-        "Crete"
-      ],
+      "destinations": ["Mykonos", "Santorini", "Crete"],
       "prices": {
-        "Mykonos": {
-          "Full-day": 8000,
-          "Half-day": 5000,
-          "VIP Transfer": 4000
-        },
-        "Santorini": {
-          "Full-day": 8500,
-          "Half-day": 5500,
-          "VIP Transfer": 4200
-        },
-        "Crete": {
-          "Full-day": 8200,
-          "Half-day": 5200,
-          "VIP Transfer": 4100
-        }
+        "Mykonos": { "Full-day": 8000, "Half-day": 5000, "VIP Transfer": 4000 },
+        "Santorini": { "Full-day": 8500, "Half-day": 5500, "VIP Transfer": 4200 },
+        "Crete": { "Full-day": 8200, "Half-day": 5200, "VIP Transfer": 4100 }
       },
       "capacity": 10,
       "notAvailableDates": ["2025-07-05"],
@@ -37,30 +21,14 @@
     {
       "boatId": "B-002",
       "name": "Cycladic Dream",
-      "destinations": [
-        "Mykonos",
-        "Santorini",
-        "Paros"
-      ],
+      "destinations": ["Mykonos", "Santorini", "Paros"],
       "prices": {
-        "Mykonos": {
-          "Full-day": 9000,
-          "Half-day": 6000,
-          "VIP Transfer": 4500
-        },
-        "Santorini": {
-          "Full-day": 9500,
-          "Half-day": 6500,
-          "VIP Transfer": 4700
-        },
-        "Paros": {
-          "Full-day": 9200,
-          "Half-day": 6200,
-          "VIP Transfer": 4600
-        }
+        "Mykonos": { "Full-day": 9000, "Half-day": 6000, "VIP Transfer": 4500 },
+        "Santorini": { "Full-day": 9500, "Half-day": 6500, "VIP Transfer": 4700 },
+        "Paros": { "Full-day": 9200, "Half-day": 6200, "VIP Transfer": 4600 }
       },
       "capacity": 15,
-      "notAvailableDates": ["2025-07-06"],
+      "notAvailableDates": ["2025-07-16"],
       "tripTypes": ["Full-day", "Half-day"],
       "itinerary": [
         { "name": "Champagne Reception", "price": 200 },

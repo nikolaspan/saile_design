@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SidebarProvider, useSidebar } from '@/components/sidebar-context';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -15,7 +15,7 @@ import {
 import { roleMenus } from '@/lib/roleMenus';
 import { useRouter } from 'next/navigation';
 
-//Trigger
+// Sidebar trigger component
 const SidebarTrigger = ({ className }: { className?: string }) => {
   const { openSidebar } = useSidebar();
   return (
@@ -30,8 +30,51 @@ interface LayoutProps {
   role: keyof typeof roleMenus;
 }
 
+interface OpenMeteoWeather {
+  current_weather: {
+    temperature: number;
+    windspeed: number;
+    winddirection: number;
+    weathercode: number;
+    time: string;
+  };
+}
+
+const getWeatherDescription = (code: number): string => {
+  // Simplified mapping for demonstration.
+  // Refer to https://open-meteo.com/en/docs for full weather code details.
+  switch (code) {
+    case 0:
+      return 'Clear sky';
+    case 1:
+    case 2:
+    case 3:
+      return 'Mainly clear, partly cloudy, and overcast';
+    case 45:
+    case 48:
+      return 'Fog';
+    case 51:
+    case 53:
+    case 55:
+      return 'Drizzle';
+    case 61:
+    case 63:
+    case 65:
+      return 'Rain';
+    case 80:
+    case 81:
+    case 82:
+      return 'Rain showers';
+    case 95:
+      return 'Thunderstorm';
+    default:
+      return 'Unknown';
+  }
+};
+
 export default function Layout({ children, role }: LayoutProps) {
   const router = useRouter();
+  const [weather, setWeather] = useState<OpenMeteoWeather | null>(null);
 
   // Set a CSS variable to accurately represent viewport height
   useEffect(() => {
@@ -42,6 +85,38 @@ export default function Layout({ children, role }: LayoutProps) {
     setVh();
     window.addEventListener('resize', setVh);
     return () => window.removeEventListener('resize', setVh);
+  }, []);
+
+  // Fetch current weather based on device's geolocation using Open-Meteo
+  useEffect(() => {
+    const fetchWeather = async (lat: number, lon: number) => {
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`
+        );
+        if (!res.ok) {
+          throw new Error('Failed to fetch weather');
+        }
+        const data: OpenMeteoWeather = await res.json();
+        setWeather(data);
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+      }
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeather(latitude, longitude);
+        },
+        (error) => {
+          console.error('Error getting geolocation:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
   }, []);
 
   return (
@@ -60,6 +135,16 @@ export default function Layout({ children, role }: LayoutProps) {
                 <Bell className="w-6 h-6" />
               </button>
               <ModeToggle />
+              {weather && weather.current_weather && (
+                <div className="flex flex-col items-end text-sm">
+                  <span className="font-medium">
+                    Temp: {Math.round(weather.current_weather.temperature)}°C
+                  </span>
+                  <span className="capitalize">
+                    {getWeatherDescription(weather.current_weather.weathercode)}
+                  </span>
+                </div>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center focus:outline-none">

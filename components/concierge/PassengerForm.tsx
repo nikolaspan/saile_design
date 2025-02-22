@@ -21,7 +21,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-// Ensure that date-picker2.tsx exists at this location.
+// Make sure DatePicker2 exists at the specified path
 import { DatePicker2 } from "@/components/date-picker2";
 
 export interface PassengerInfo {
@@ -81,7 +81,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
     },
   });
 
-  // Get isSubmitting from formState
   const {
     formState: { isSubmitting },
   } = form;
@@ -98,7 +97,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
           Selected Boat: <strong>{selectedBoatName}</strong>
         </p>
 
-        {/* Hour Field */}
         <FormField
           control={form.control}
           name="hour"
@@ -120,7 +118,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
           )}
         />
 
-        {/* Itinerary Options */}
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">Select Additional Itinerary Options</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -173,10 +170,8 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
           </div>
         </div>
 
-        {/* Fixed Passenger Fields */}
         {passengers.map((_, index) => (
           <div key={index} className="border p-4 rounded-md space-y-4">
-            {/* Full Name */}
             <FormField
               control={form.control}
               name={`passengers.${index}.fullName`}
@@ -199,7 +194,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
               )}
             />
 
-            {/* ID Number */}
             <FormField
               control={form.control}
               name={`passengers.${index}.idNumber`}
@@ -222,7 +216,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
               )}
             />
 
-            {/* Birth Date using DatePicker2 */}
             <FormField
               control={form.control}
               name={`passengers.${index}.birth`}
@@ -247,7 +240,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
           </div>
         ))}
 
-        {/* Booking Type */}
         <FormField
           control={form.control}
           name="bookingType"

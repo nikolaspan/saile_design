@@ -1,0 +1,93 @@
+[
+    {
+      "bookingType": "Tentative",
+      "selectedBoat": {
+        "boatId": "B-001",
+        "name": "Aegean Voyager",
+        "destinations": ["Mykonos", "Santorini", "Crete"],
+        "prices": {
+          "Mykonos": { "Full-day": 8000, "Half-day": 5000, "VIP Transfer": 4000 },
+          "Santorini": { "Full-day": 8500, "Half-day": 5500, "VIP Transfer": 4200 },
+          "Crete": { "Full-day": 8200, "Half-day": 5200, "VIP Transfer": 4100 }
+        },
+        "capacity": 10,
+        "notAvailableDates": ["2025-07-05"],
+        "tripTypes": ["Full-day", "Half-day", "VIP Transfer"],
+        "itinerary": [
+          { "name": "Wine Tasting", "price": 100 },
+          { "name": "Luxury Seating", "price": 150 },
+          { "name": "Gourmet Meals", "price": 200 }
+        ]
+      },
+      "date": "2025-08-15",
+      "passengers": [
+        { "fullName": "Alice Smith", "idNumber": "ID12345", "birth": "1985-06-15" },
+        { "fullName": "Bob Johnson", "idNumber": "ID67890", "birth": "1983-03-22" }
+      ],
+      "itineraries": [
+        { "name": "Wine Tasting", "price": 100 }
+      ],
+      "hour": "10:00"
+    },
+    {
+      "bookingType": "Tentative",
+      "selectedBoat": {
+        "boatId": "B-002",
+        "name": "Cycladic Dream",
+        "destinations": ["Mykonos", "Santorini", "Paros"],
+        "prices": {
+          "Mykonos": { "Full-day": 9000, "Half-day": 6000, "VIP Transfer": 4500 },
+          "Santorini": { "Full-day": 9500, "Half-day": 6500, "VIP Transfer": 4700 },
+          "Paros": { "Full-day": 9200, "Half-day": 6200, "VIP Transfer": 4600 }
+        },
+        "capacity": 15,
+        "notAvailableDates": ["2025-07-06"],
+        "tripTypes": ["Full-day", "Half-day"],
+        "itinerary": [
+          { "name": "Champagne Reception", "price": 200 },
+          { "name": "DJ Music", "price": 120 },
+          { "name": "Onboard Entertainment", "price": 150 }
+        ]
+      },
+      "date": "2025-08-15",
+      "passengers": [
+        { "fullName": "Charlie Brown", "idNumber": "ID54321", "birth": "1990-12-01" },
+        { "fullName": "Dana White", "idNumber": "ID98765", "birth": "1988-11-20" },
+        { "fullName": "Eve Black", "idNumber": "ID11223", "birth": "1992-05-10" }
+      ],
+      "itineraries": [
+        { "name": "DJ Music", "price": 120 }
+      ],
+      "hour": "14:00"
+    },
+    {
+      "bookingType": "Tentative",
+      "selectedBoat": {
+        "boatId": "B-001",
+        "name": "Aegean Voyager",
+        "destinations": ["Mykonos", "Santorini", "Crete"],
+        "prices": {
+          "Mykonos": { "Full-day": 8000, "Half-day": 5000, "VIP Transfer": 4000 },
+          "Santorini": { "Full-day": 8500, "Half-day": 5500, "VIP Transfer": 4200 },
+          "Crete": { "Full-day": 8200, "Half-day": 5200, "VIP Transfer": 4100 }
+        },
+        "capacity": 10,
+        "notAvailableDates": ["2025-07-05"],
+        "tripTypes": ["Full-day", "Half-day", "VIP Transfer"],
+        "itinerary": [
+          { "name": "Wine Tasting", "price": 100 },
+          { "name": "Luxury Seating", "price": 150 },
+          { "name": "Gourmet Meals", "price": 200 }
+        ]
+      },
+      "date": "2025-03-07",
+      "passengers": [
+        { "fullName": "John Doe", "idNumber": "ID11111", "birth": "1990-01-01" }
+      ],
+      "itineraries": [
+        { "name": "Wine Tasting", "price": 100 }
+      ],
+      "hour": "12:00"
+    }
+  ]
+  

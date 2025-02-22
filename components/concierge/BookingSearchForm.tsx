@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,6 +11,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandItem,
+  CommandEmpty,
+} from "@/components/ui/command";
+import boatsData from "@/components/concierge/boats.json";
+
+// Define the Boat interface.
+// The prices property is defined as a Partial<Record<string, Record<string, number>>>.
+// This means for each destination key the value is either undefined or a Record of trip types and numbers.
+interface Boat {
+  boatId: string;
+  name: string;
+  destinations: string[];
+  prices: Partial<Record<string, Record<string, number>>>;
+  capacity: number;
+  notAvailableDates: string[];
+  tripTypes: string[];
+  itinerary: { name: string; price: number }[];
+}
+
+// Define the structure of the imported JSON.
+interface BoatsData {
+  boats: Boat[];
+}
+
+// Convert the imported JSON to our type.
+const { boats: allBoats } = boatsData as BoatsData;
+
+// Extract unique destinations from all boats.
+const availableDestinations = Array.from(
+  new Set(allBoats.flatMap((boat) => boat.destinations))
+);
 
 interface BookingSearchFormProps {
   destination: string;
@@ -35,32 +70,66 @@ const BookingSearchForm: React.FC<BookingSearchFormProps> = ({
   setTripType,
   onSearch,
 }) => {
+  // Local state to control whether the dropdown is visible.
+  const [focused, setFocused] = useState(false);
+
+  // Filter suggestions based on user input (case-insensitive).
+  const filteredSuggestions = destination
+    ? availableDestinations.filter((dest) =>
+        dest.toLowerCase().includes(destination.toLowerCase())
+      )
+    : availableDestinations;
+
   return (
     <div className="space-y-4 p-6 shadow-md rounded-lg">
       <h2 className="text-3xl font-bold text-center">New Booking</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Destination */}
+        {/* Destination field using shadcn Command for autofill */}
         <div className="flex flex-col">
           <label className="mb-1 text-sm font-semibold">Destination</label>
-          <Input
-            placeholder="Enter destination (e.g. Mykonos, Santorini)"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-          />
+          <Command className="rounded-md border border-gray-200">
+            <CommandInput
+              placeholder="Enter destination (e.g. Mykonos, Santorini)"
+              value={destination}
+              onValueChange={(value) => setDestination(value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              className="border-0 outline-none focus:ring-0"
+            />
+            {focused && (
+              <CommandList className="max-h-60 overflow-y-auto">
+                {filteredSuggestions.length > 0 ? (
+                  filteredSuggestions.map((suggestion) => (
+                    <CommandItem
+                      key={suggestion}
+                      // Use onMouseDown so that the click registers before blur.
+                      onMouseDown={() => setDestination(suggestion)}
+                    >
+                      {suggestion}
+                    </CommandItem>
+                  ))
+                ) : (
+                  <CommandEmpty>No results found.</CommandEmpty>
+                )}
+              </CommandList>
+            )}
+          </Command>
         </div>
 
-        {/* Passenger Count */}
+        {/* Passenger Count using shadcn Input */}
         <div className="flex flex-col">
-          <label className="mb-1 text-sm font-semibold">Number of Passengers</label>
+          <label className="mb-1 text-sm font-semibold">
+            Number of Passengers
+          </label>
           <Input
             type="number"
             placeholder="Enter number of passengers"
-            value={passengerCount > 0 ? passengerCount : ""}
+            value={passengerCount > 0 ? passengerCount.toString() : ""}
             onChange={(e) => setPassengerCount(Number(e.target.value))}
           />
         </div>
 
-        {/* Date Picker */}
+        {/* Date Picker using shadcn DatePicker */}
         <div className="flex flex-col">
           <label className="mb-1 text-sm font-semibold">Choose Day</label>
           <DatePicker value={date} onChange={setDate} />
