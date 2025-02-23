@@ -21,7 +21,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-// Make sure DatePicker2 exists at the specified path
+
 import { DatePicker2 } from "@/components/date-picker2";
 
 export interface PassengerInfo {

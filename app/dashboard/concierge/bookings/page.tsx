@@ -25,7 +25,7 @@ interface Trip {
   revenue: number;
   date: string;
   roomId: string;
-  boatId: number; // ✅ Add this line
+  boatId: number; 
   passengers: Passenger[];
 }
 
@@ -58,8 +58,8 @@ const unifiedTrips: Trip[] = (tripsData as unknown as RawTripsJson).trips.map((t
   itineraryName: trip.itineraryName,
   revenue: trip.revenue,
   date: trip.date,
-  boatId: trip.boatId, // ✅ Ensure this exists
-  roomId: String(trip.boatId), // ❓ Double-check if this mapping is intentional
+  boatId: trip.boatId, 
+  roomId: String(trip.boatId), 
   passengers: trip.passengers.map((p: RawPassenger) => ({
     passengerId: p.passengerId,
     name: p.name,

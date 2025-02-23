@@ -4,7 +4,7 @@ import TripsTable from "@/components/concierge/TripsTable";
 import Calendar from "@/components/concierge/Calendar";
 
 export default function ConciergeDashboard() {
-  const role = "Concierge"; // Replace with dynamic role detection logic
+  const role = "Concierge"; 
   
   return (
     <DashboardLayout role={role}>

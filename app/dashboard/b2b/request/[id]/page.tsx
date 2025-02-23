@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import requestsData from "@/components/b2b/requests.json";
 
-// Define Request Type
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Request = {
   id: number;
@@ -18,7 +18,7 @@ type Request = {
   date: string;
   status: "Pending" | "Accepted" | "Declined";
 };
- // ✅ Added two constant passengers
+ // mock data
  const passengers = [
   { passengerId: "P-101", name: "John Doe", birthday: "1990-06-15" },
   { passengerId: "P-102", name: "Jane Smith", birthday: "1992-08-22" },

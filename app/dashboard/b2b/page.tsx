@@ -4,21 +4,21 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseISO, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
-// Import useRouter from next/navigation for client components in the app directory
+
 import { useRouter } from "next/navigation";
 
 import tripsData from "@/components/boats/trips.json";
 import TripsTable from "@/components/boats/TripsTable";
 
 export default function B2BDashboard() {
-  const router = useRouter(); // Now using next/navigation
+  const router = useRouter();
 
   // Get today's bookings
   const todaysBookings = tripsData.trips.filter((trip) =>
     isToday(parseISO(trip.date))
   );
 
-  // Type the parameter 'id' as a number (adjust if your ID is a string)
+
   const handleBookingClick = (id: number) => {
     router.push(`/dashboard/b2b/bookings/${id}`);
   };
@@ -61,7 +61,7 @@ export default function B2BDashboard() {
           </CardContent>
         </Card>
 
-        {/* Replace current table with TripsTable */}
+  
         <TripsTable />
       </div>
     </DashboardLayout>

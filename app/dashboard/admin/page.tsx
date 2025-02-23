@@ -1,7 +1,7 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 export default function AdminDashboard() {
-  const role = "Admin"; // Replace with dynamic role detection logic
+  const role = "Admin";
 
   return (
     <DashboardLayout role={role}>

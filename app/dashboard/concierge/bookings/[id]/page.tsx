@@ -8,8 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-// Define the Trip type based on your JSON data.
-// Note: The passengers now include an optional "birthday" field.
+
 // If "birthday" is provided, it will be used; otherwise, we'll show "birthId".
 type Trip = {
   tripId: string;
@@ -26,12 +25,12 @@ type Trip = {
   }[];
 };
 
-// Define the shape of the JSON file so that TypeScript knows that it has a 'trips' property
+// Define the shape of the JSON
 interface TripsJson {
   trips: Trip[];
 }
 
-// Import the trips JSON data from your components/concierge folder and cast it
+
 import tripsDataRaw from "@/components/concierge/trips.json";
 const tripsData = tripsDataRaw as unknown as TripsJson;
 

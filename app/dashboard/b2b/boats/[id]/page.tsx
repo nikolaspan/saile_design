@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client";  // Ensure this is a client component
+"use client";  
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import AddItineraryDialog from "@/components/boats/AddItineraryDialog";
 import AddPriceDialog from "@/components/boats/AddPriceDialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import boatsData from "../boats.json";  // Importing boats data
+import boatsData from "../boats.json";  
 
 export default function BoatsPage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function BoatsPage() {
   useEffect(() => {
     setIsClient(true);
 
-    // Get selected boat from sessionStorage (assuming it's stored when navigating from the Boats page)
+
     const selectedBoatId = sessionStorage.getItem("selectedBoatId");
 
     if (selectedBoatId) {

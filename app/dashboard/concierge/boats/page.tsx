@@ -14,9 +14,9 @@ interface Boat {
 }
 
 const BoatsPage = () => {
-  const role = "Concierge"; // Keep role if it's required for layout rendering
+  const role = "Concierge"; 
 
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   // Filter boats based on the search term
   const filteredBoats = boatsData.boats.filter((boat: Boat) =>

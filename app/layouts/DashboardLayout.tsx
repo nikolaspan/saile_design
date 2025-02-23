@@ -41,7 +41,7 @@ interface OpenMeteoWeather {
 }
 
 const getWeatherDescription = (code: number): string => {
-  // Simplified mapping for demonstration.
+ 
   // Refer to https://open-meteo.com/en/docs for full weather code details.
   switch (code) {
     case 0:
@@ -76,7 +76,7 @@ export default function Layout({ children, role }: LayoutProps) {
   const router = useRouter();
   const [weather, setWeather] = useState<OpenMeteoWeather | null>(null);
 
-  // Set a CSS variable to accurately represent viewport height
+  
   useEffect(() => {
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
@@ -87,7 +87,7 @@ export default function Layout({ children, role }: LayoutProps) {
     return () => window.removeEventListener('resize', setVh);
   }, []);
 
-  // Fetch current weather based on device's geolocation using Open-Meteo
+  // Fetch current weather 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
       try {

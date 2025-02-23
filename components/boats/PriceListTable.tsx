@@ -32,13 +32,13 @@ type PriceItem = {
 };
 
 export default function PriceListTable() {
-  // Default filter is now "All"
+  // Default filter  "All"
   const [charterFilter, setCharterFilter] = useState<string>("All");
   const [itineraryFilter, setItineraryFilter] = useState("");
   // Sorting state for finalPrice: ascending or descending
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Filter price list by charter type and itinerary name (case-insensitive)
+  // Filter (case-insensitive)
   const filteredPriceList = priceList.filter((price: PriceItem) => {
     const charterMatches =
       charterFilter === "All" || price.charterType === charterFilter;

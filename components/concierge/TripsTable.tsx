@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { format, parseISO, isWithinInterval } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-// ✅ Import JSON directly
+
 import tripsData from "./trips.json";
 
 // Updated Trip type to match our JSON structure
@@ -25,11 +25,11 @@ type Trip = {
   itineraryName: string;
   revenue: number;
   date: string;
-  boatId: number; // JSON uses boatId instead of roomId
+  boatId: number; 
   passengers: {
     passengerId: string;
     name: string;
-    birthday: string; // JSON now uses birthday instead of birthId
+    birthday: string; 
   }[];
 };
 

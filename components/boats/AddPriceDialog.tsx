@@ -27,7 +27,7 @@ export default function AddPriceDialog({
   setOpen,
 }: AddPriceDialogProps) {
   const [newPrice, setNewPrice] = useState({
-    charterType: "Half Day", // Default value
+    charterType: "Half Day", 
     CharteritineraryName: "",
     rentalPriceWithoutCommission: "",
     commission: "",

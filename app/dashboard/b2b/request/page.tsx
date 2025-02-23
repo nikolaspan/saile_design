@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 // Import request data from JSON
 import requestsData from "@/components/b2b/requests.json";
 
-// ✅ Define Request Type including `declineReason`, `hotel`, and `time`
+//  Define Request Type including `declineReason`, `hotel`, and `time`
 type Request = {
   id: number;
   boatId: number;

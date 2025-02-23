@@ -14,7 +14,7 @@ export default function AddItineraryDialog({ open, setOpen }: AddItineraryDialog
 
   const handleAddItinerary = () => {
     if (newItinerary.name && newItinerary.price) {
-      console.log("New Itinerary:", newItinerary); // Replace with actual state update logic
+      console.log("New Itinerary:", newItinerary); 
       setNewItinerary({ name: "", price: "" });
       setOpen(false);
     }

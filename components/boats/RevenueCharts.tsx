@@ -33,19 +33,19 @@ const AVAILABLE_YEARS = [2024, 2025]; // List of available years
 export default function RevenueCharts() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [barChartData, setBarChartData] = useState<any[]>([]);
-  const [filter, setFilter] = useState("Month"); // Default filter is Month
+  const [filter, setFilter] = useState("Month"); 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(getMonth(new Date()));
 
   useEffect(() => {
     const today = new Date();
-    // Only consider trips that have occurred in the past
+
     let filteredTrips = trips.filter(
       (trip) => parseISO(trip.date) <= today
     );
 
     if (filter === "Week") {
-      // Show data for the current week
+    
       filteredTrips = filteredTrips.filter((trip) =>
         isWithinInterval(parseISO(trip.date), {
           start: startOfWeek(today, { weekStartsOn: 1 }),
@@ -53,7 +53,7 @@ export default function RevenueCharts() {
         })
       );
     } else if (filter === "Month") {
-      // Filter by selected month and year
+   
       filteredTrips = filteredTrips.filter((trip) => {
         const tripDate = parseISO(trip.date);
         return (
@@ -62,7 +62,7 @@ export default function RevenueCharts() {
         );
       });
     } else if (filter === "Year") {
-      // Filter by selected year only
+    
       filteredTrips = filteredTrips.filter(
         (trip) => getYear(parseISO(trip.date)) === selectedYear
       );

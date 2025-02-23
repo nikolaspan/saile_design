@@ -20,9 +20,6 @@ import {
 } from "@/components/ui/command";
 import boatsData from "@/components/concierge/boats.json";
 
-// Define the Boat interface.
-// The prices property is defined as a Partial<Record<string, Record<string, number>>>.
-// This means for each destination key the value is either undefined or a Record of trip types and numbers.
 interface Boat {
   boatId: string;
   name: string;
@@ -34,7 +31,7 @@ interface Boat {
   itinerary: { name: string; price: number }[];
 }
 
-// Define the structure of the imported JSON.
+// Define the structure of JSON.
 interface BoatsData {
   boats: Boat[];
 }

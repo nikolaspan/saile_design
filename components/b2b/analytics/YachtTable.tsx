@@ -40,9 +40,9 @@ const convertDateForFiltering = (dateStr: string): string => {
   return `${year}-${month}-${day}`;
 };
 
-// (Optional) Helper: Format a date from ISO (YYYY-MM-DD) to DD-MM-YYYY for display.
 
-// Helper: Normalize numeric strings ensuring two decimals.
+
+// Normalize numeric strings ensuring two decimals.
 const normalizeNumber = (value: string | null | undefined): string => {
   if (!value) return "0.00";
   const normalized = value.toString().replace(",", ".").replace(/[^0-9.]/g, "");
@@ -56,7 +56,7 @@ const yachtData: YachtData[] = (Array.isArray(data) ? data : [data]).map(item =>
   charterType: item.charterType as YachtData["charterType"],
 }));
 
-// CSV export helper.
+// CSV export 
 const exportToCSV = (exportData: YachtData[]) => {
   // Define header mapping with keys typed as keyof YachtData.
   const headers: { label: string; key: keyof YachtData }[] = [
@@ -76,9 +76,9 @@ const exportToCSV = (exportData: YachtData[]) => {
     { label: "Number of Passengers", key: "numberOfPassengers" },
   ];
 
-  // Build CSV rows.
+  // Build CSV .
   const csvRows: string[] = [];
-  // Create header row with quotes.
+  // Create header 
   csvRows.push(headers.map(h => `"${h.label}"`).join(","));
 
   exportData.forEach(row => {

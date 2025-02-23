@@ -24,7 +24,7 @@ export default function LoginPage() {
         const { role } = await response.json();
 
         // Set cookies for session management
-        document.cookie = `authToken=mockToken; path=/; max-age=3600`; // Example token
+        document.cookie = `authToken=mockToken; path=/; max-age=3600`; 
         document.cookie = `userRole=${role}; path=/; max-age=3600`;
 
         // Redirect based on user role
