@@ -104,7 +104,7 @@ export default function Layout({ children, role }: LayoutProps) {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        position => {
+        (position) => {
           const { latitude, longitude } = position.coords;
           fetchWeather(latitude, longitude);
         },
