@@ -110,8 +110,8 @@ export default function Layout({ children, role }: LayoutProps) {
           const { latitude, longitude } = position.coords;
           fetchWeather(latitude, longitude);
         },
-        (error) => {
-          console.error('Error getting geolocation:', error);
+        (/*error*/) => {
+          //console.error('Error getting geolocation:', error);
         }
       );
     } else {
