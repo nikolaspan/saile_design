@@ -104,7 +104,7 @@ export default function Layout({ children, role }: LayoutProps) {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        position => {
           const { latitude, longitude } = position.coords;
           fetchWeather(latitude, longitude);
         },
@@ -126,9 +126,7 @@ export default function Layout({ children, role }: LayoutProps) {
           <header className="flex flex-wrap items-center justify-between px-3 py-2 border-b border-gray-200 sm:px-4">
             <div className="flex items-center space-x-4">
               <SidebarTrigger className="w-12 h-12" />
-              <h1 className="text-2xl font-bold capitalize">
-                {role} Dashboard
-              </h1>
+              <h1 className="text-2xl font-bold capitalize">{role} Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <button className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
@@ -149,10 +147,7 @@ export default function Layout({ children, role }: LayoutProps) {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center focus:outline-none">
                     <Avatar>
-                      <AvatarImage
-                        src="/avatars/shadcn.jpg"
-                        alt="User Avatar"
-                      />
+                      <AvatarImage src="/avatars/shadcn.jpg" alt="User Avatar" />
                       <AvatarFallback>U</AvatarFallback>
                     </Avatar>
                   </button>
