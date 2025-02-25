@@ -93,7 +93,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
     <>
       {/* Mobile overlay */}
       <div
-        className={`fixed inset-0 bg-black z-40 transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 dark:bg-black bg-white z-40 transition-opacity duration-300 md:hidden ${
           sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={closeSidebar}

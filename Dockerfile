@@ -7,8 +7,7 @@ WORKDIR /app
 # Copy package.json and lock file separately to leverage caching
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm install --production
+
 
 # Copy the rest of the application files
 COPY . .
@@ -21,15 +20,6 @@ FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-# Copy only necessary files from builder stage
-COPY --from=builder /app/package.json /app/package-lock.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-
-# Use non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
 
 # Set environment variable
 ENV NODE_ENV=production
