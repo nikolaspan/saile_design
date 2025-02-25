@@ -168,7 +168,7 @@ export default function Layout({ children, role }: LayoutProps) {
         <div className='flex flex-col flex-1 min-h-full min-w-0'>
           <header className='flex flex-wrap items-center justify-between px-3 py-2 border-b border-gray-200 sm:px-4'>
             <div className='flex items-center space-x-2 sm:space-x-4'>
-              <SidebarTrigger className='sm:hidden  w-8 h-8 sm:w-10 sm:h-10' />
+              <SidebarTrigger className='md:hidden w-8 h-8 sm:w-10 sm:h-10' />
               <h1 className='text-lg font-bold capitalize truncate sm:text-xl md:text-2xl'>
                 {role} Dashboard
               </h1>
