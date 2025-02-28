@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BookingStatus {
+  Tentative       // Provisional booking awaiting concierge acceptance
+  Definitive      // Booking confirmed by the concierge (customer has confirmed)
+  Pending         // Booking requires B2B approval (for foreign boats)
+  Cancelled       // Booking has been canceled
+}
+
+enum BookingType {
+  FullDay
+  HalfDay
+  VipTransfer
+  SunsetCruise
+}
+
+enum UserRoleType {
+  concierge
+  admin
+  b2b
+}
+
+// New Enum for Boat types
+enum BoatType {
+  Catamaran
+  RIB
+  Speedboat
+  Yacht
+  Monohull
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  role         UserRoleType @default(b2b)
+  perks        UserPerkAssignment[]
+
+  concierge    Concierge?
+  b2b          B2B?
+}
+
+model UserPerk {
+  id    String @id @default(uuid())
+  name  String @unique
+
+  users UserPerkAssignment[]
+}
+
+model UserPerkAssignment {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  perk   UserPerk @relation(fields: [perkId], references: [id])
+  perkId String
+
+  @@id([userId, perkId])
+}
+
+model Hotel {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  location  String?
+  createdAt DateTime @default(now())
+
+  concierge Concierge[]
+  boats     Boat[]
+  b2bHotels B2BHotel[]
+}
+
+model Concierge {
+  userId  String @id
+  user    User   @relation(fields: [userId], references: [id])
+  hotel   Hotel  @relation(fields: [hotelId], references: [id])
+  hotelId String
+
+  bookings Booking[]
+}
+
+model B2B {
+  userId           String @id
+  user             User   @relation(fields: [userId], references: [id])
+  ezsailCommission Decimal @default(3.00)
+  vat              String
+
+  boats     Boat[]
+  b2bHotels B2BHotel[]
+  bookings  Booking[]
+}
+
+model B2BHotel {
+  b2b   B2B    @relation(fields: [b2bId], references: [userId])
+  b2bId String
+
+  hotel   Hotel  @relation(fields: [hotelId], references: [id])
+  hotelId String
+
+  @@id([b2bId, hotelId])
+}
+
+model Boat {
+  id        String   @id @default(uuid())
+  name      String
+  b2b       B2B     @relation(fields: [b2bId], references: [userId])
+  b2bId     String
+  hotel     Hotel   @relation(fields: [hotelId], references: [id])
+  hotelId   String
+  isForeign Boolean @default(false)
+  createdAt DateTime @default(now())
+  // New field for boat type and length
+  boatType  BoatType @default(Monohull)
+  length    Decimal  @default(0) @db.Decimal(10,2)
+
+  skipper            Skipper?
+  bookings           Booking[]
+  unavailability     BoatUnavailability[]
+
+  itineraries        Itinerary[]       @relation("BoatItineraries")
+  charterItineraries CharterItinerary[]
+
+  @@unique([b2bId, name], name: "UniqueOwnedBoat")
+}
+
+model Skipper {
+  id            String   @id @default(uuid())
+  boat          Boat     @relation(fields: [boatId], references: [id])
+  boatId        String   @unique
+  name          String
+  dateOfBirth   DateTime
+  licenseNumber String   @unique
+}
+
+model BoatUnavailability {
+  id              String   @id @default(uuid())
+  boat            Boat     @relation(fields: [boatId], references: [id])
+  boatId          String
+  unavailableDate DateTime
+  reason          String   @default("Unavailable")
+
+  @@unique([boatId, unavailableDate])
+}
+
+model Booking {
+  id               String        @id @default(uuid())
+  b2b              B2B           @relation(fields: [b2bId], references: [userId])
+  b2bId            String
+  boat             Boat          @relation(fields: [boatId], references: [id])
+  boatId           String
+  bookingDateTime  DateTime      
+  type             BookingType
+  status           BookingStatus @default(Definitive)
+  createdAt        DateTime      @default(now())
+  requiresApproval Boolean       @default(false)
+  concierge        Concierge     @relation(fields: [conciergeId], references: [userId])
+  conciergeId      String
+
+  roomNumber       String // Customer's room number
+
+  // Each booking must select one CharterItinerary.
+  charterItinerary   CharterItinerary @relation("Booking_CharterItinerary", fields: [charterItineraryId], references: [id])
+  charterItineraryId String
+
+  // Each booking can select many itineraries (via join table).
+  bookingItineraries BookingItinerary[]
+
+  passengers Passenger[]
+
+  @@unique([boatId, bookingDateTime])
+}
+
+model Passenger {
+  id          String   @id @default(uuid())
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  bookingId   String
+  fullName    String
+  dateOfBirth DateTime
+  idNumber    String
+  nationality String
+}
+
+model CharterItinerary {
+  id                             String   @id @default(uuid())
+  boat                           Boat     @relation(fields: [boatId], references: [id])
+  boatId                         String
+  name                           String
+  netBoatRentalWithoutCommission Decimal  @db.Decimal(10,2)
+  commission                     Decimal  @db.Decimal(10,2)
+  netBoatRentalWithoutVAT        Decimal  @db.Decimal(10,2)
+  vat                            Decimal  @db.Decimal(10,2)
+  boatRentalDay                  Decimal  @db.Decimal(10,2)
+  fuelCost                       Decimal  @db.Decimal(10,2)
+  priceVATAndFuelIncluded        Decimal  @db.Decimal(10,2)
+  ezsailSeaServicesCommission    Decimal  @db.Decimal(10,2)
+  finalPrice                     Decimal  @db.Decimal(10,2)
+
+  // Opposite relation: a CharterItinerary may be selected by many bookings.
+  bookings Booking[] @relation("Booking_CharterItinerary")
+}
+
+model Itinerary {
+  id                 String              @id @default(uuid())
+  name               String
+  price              Decimal             @default(0) @db.Decimal(10,2)
+  boats              Boat[]              @relation("BoatItineraries")
+  bookingItineraries BookingItinerary[]
+}
+
+model BookingItinerary {
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  bookingId   String
+  itinerary   Itinerary @relation(fields: [itineraryId], references: [id])
+  itineraryId String
+
+  @@id([bookingId, itineraryId])
+}

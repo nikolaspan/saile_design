@@ -1,31 +1,38 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { withAuth } from "next-auth/middleware";
+import { NextResponse, NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get("authToken")?.value; // Access the value of the authToken cookie
-  const role = req.cookies.get("userRole")?.value;   // Access the value of the userRole cookie
+export default withAuth(
+  function middleware(req: NextRequest) {
+    // Cast req to access nextauth property
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const token = (req as any).nextauth?.token;
+    const { pathname } = req.nextUrl;
 
-  const { pathname } = req.nextUrl;
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
 
-  // Redirect unauthenticated users to the login page
-  if (!token && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
+    // Normalize role to lowercase for consistent comparison
+    const role = (token.role as string).toLowerCase();
 
-  // Optional: Add role-specific access control
-  if (pathname.startsWith("/dashboard/b2b") && role !== "B2B") {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-  if (pathname.startsWith("/dashboard/concierge") && role !== "Concierge") {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-  if (pathname.startsWith("/dashboard/admin") && role !== "Admin") {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  return NextResponse.next();
-}
+    if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
+      return NextResponse.redirect(new URL(`/dashboard/${role}`, req.url));
+    }
+    if (pathname.startsWith("/dashboard/concierge") && role !== "concierge") {
+      return NextResponse.redirect(new URL(`/dashboard/${role}`, req.url));
+    }
+    if (pathname.startsWith("/dashboard/b2b") && role !== "b2b") {
+      return NextResponse.redirect(new URL(`/dashboard/${role}`, req.url));
+    }
+    // Prevent logged-in users from accessing login page
+    if (pathname === "/login" && token) {
+      return NextResponse.redirect(new URL(`/dashboard/${role}`, req.url));
+    }
+    return NextResponse.next();
+  },
+  { pages: { signIn: "/login" } }
+);
 
 export const config = {
-  matcher: ["/dashboard/:path*"], // Protect all dashboard routes
+  matcher: ["/dashboard/:path*", "/login"]
 };

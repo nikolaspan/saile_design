@@ -1,7 +1,7 @@
-// app/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; // use Inter instead of Geist
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import SessionProvider from "@/components/SessionProvider"; 
 import "./globals.css";
 
 // Configure the font
@@ -24,14 +24,16 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${inter.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

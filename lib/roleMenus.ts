@@ -36,18 +36,13 @@ export const roleMenus: RoleMenus = {
         { title: "Skipper", url: "/dashboard/b2b/", icon: User },
         { title: "Boats", url: "/dashboard/b2b/boats", icon: Ship },
         { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus },
-      ],
-    },
-    {
-      title: "Analytics",
-      url: "/dashboard/b2b/",
-      disabled: true, // This item is disabled
-      icon: PieChart,
-      items: [
         { title: "Overview", url: "/dashboard/b2b/analytics", icon: Calendar },
         { title: "Bookings", url: "/dashboard/b2b", icon: Users, isActive: true },
+        { title: "Analytics", url: "/dashboard/b2b/analytics", icon: PieChart },
+       
       ],
     },
+    
     {
       title: "Settings",
       url: "/dashboard/b2b",
@@ -67,17 +62,11 @@ export const roleMenus: RoleMenus = {
       items: [
         { title: "Find Boats", url: "/dashboard/concierge/boats", icon: Ship,  },
         { title: "Find B2B", url: "/dashboard/concierge/", icon: User, disabled: true },
-      ],
-    },
-    {
-      title: "Bookings",
-      url: "/dashboard/concierge/bookings",
-      icon: Frame,
-      items: [
         { title: "New", url: "/dashboard/concierge/bookings/new", icon: Calendar },
         { title: "History", url: "/dashboard/concierge/bookings", icon: ClipboardList },
       ],
     },
+    
   ],
   Admin: [
     {

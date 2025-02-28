@@ -1,32 +1,20 @@
-# Use multi-stage build to reduce final image size
-FROM node:18-alpine AS builder
+# Use the official Node.js image from Docker Hub
+FROM node:18-alpine
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and lock file separately to leverage caching
-COPY package.json package-lock.json ./
+# Copy package.json and package-lock.json (or yarn files) into the container
+COPY package*.json ./
 
+# Install the dependencies inside the container
+RUN npm install
 
-
-# Copy the rest of the application files
+# Copy the rest of the application code into the container
 COPY . .
-
-# Build the app
-RUN npm run build
-
-# -- Production Stage --
-FROM node:18-alpine AS runner
-
-WORKDIR /app
-
-
-# Set environment variable
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
 # Expose port 3000
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "start"]
+# Start the Next.js application
+CMD ["npm", "run", "dev"]
