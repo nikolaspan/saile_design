@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogOverlay,
@@ -22,49 +22,128 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-export type Boat = {
-  id: number;
+// This is the shape used for the form state.
+type NewBoatForm = {
   name: string;
-  type: string;
+  boatType: string;
   length: number;
   capacity: number;
-  hotel: string;
+  hotelId: string;
   origin: "Local" | "Foreign";
 };
 
+// Unified Boat type used by all components.
+// Note: id is a string and we convert origin into isForeign.
+export type Boat = {
+  id: string;
+  name: string;
+  boatType: string;
+  length: number;
+  capacity: number;
+  hotel: { name: string };
+  isForeign: boolean;
+};
+
+type Hotel = {
+  id: number;
+  name: string;
+};
+
 type AddBoatDialogProps = {
-  onAdd: (boat: Omit<Boat, "id">) => void;
+  onAdd: (boat: Boat) => void;
 };
 
 export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
   const [open, setOpen] = useState(false);
-  const [newBoat, setNewBoat] = useState<Omit<Boat, "id">>({
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [hotelError, setHotelError] = useState<string | null>(null);
+  const [newBoat, setNewBoat] = useState<NewBoatForm>({
     name: "",
-    type: "Catamaran",
+    boatType: "Catamaran",
     length: 0,
     capacity: 0,
-    hotel: "Seaside Resort",
+    hotelId: "",
     origin: "Local",
   });
 
-  const handleAddBoat = () => {
+  // Fetch connected hotels from the API.
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        // Adjust URL if your endpoint for connected hotels is different.
+        const response = await fetch("/api/b2b/hotels");
+        const data: { hotels: Hotel[] } = await response.json();
+        if (Array.isArray(data.hotels)) {
+          setHotels(data.hotels);
+        }
+      } catch (error) {
+        console.error("Error fetching hotels:", error);
+        setHotelError("Failed to load hotels");
+      }
+    };
+    fetchHotels();
+  }, []);
+
+  // Auto-select the hotel if only one is available.
+  useEffect(() => {
+    if (hotels.length === 1 && !newBoat.hotelId) {
+      setNewBoat((prev) => ({ ...prev, hotelId: String(hotels[0].id) }));
+    }
+  }, [hotels, newBoat.hotelId]);
+
+  // Submit new boat to API.
+  const handleAddBoat = async () => {
     if (
       !newBoat.name ||
       newBoat.length <= 0 ||
       newBoat.capacity <= 0 ||
-      !newBoat.hotel
+      !newBoat.hotelId
     )
       return;
-    onAdd(newBoat);
-    setNewBoat({
-      name: "",
-      type: "Catamaran",
-      length: 0,
-      capacity: 0,
-      hotel: "Seaside Resort",
-      origin: "Local",
-    });
-    setOpen(false);
+
+    // Construct payload to match API expectations.
+    const payload = {
+      hotelId: newBoat.hotelId, // Do not convert to number
+      name: newBoat.name,
+      boatType: newBoat.boatType,
+      capacity: newBoat.capacity,
+      length: newBoat.length,
+      isForeign: newBoat.origin === "Foreign",
+    };
+
+    try {
+      const response = await fetch("/api/b2b/boats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        // Log response details for debugging.
+        const errorText = await response.text();
+        console.error("Failed to add boat:", response.status, errorText);
+        throw new Error("Failed to add boat");
+      }
+
+      // Convert the returned id to string if needed.
+      const createdBoatRaw = await response.json();
+      const createdBoat: Boat = {
+        ...createdBoatRaw,
+        id: String(createdBoatRaw.id),
+      };
+      onAdd(createdBoat);
+      setNewBoat({
+        name: "",
+        boatType: "Catamaran",
+        length: 0,
+        capacity: 0,
+        hotelId: "",
+        origin: "Local",
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error("Error adding boat:", error);
+    }
   };
 
   return (
@@ -78,13 +157,10 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
             + Add Boat
           </Button>
         </DialogTrigger>
-        {/* Dark overlay to dim the background */}
         <DialogOverlay className="fixed inset-0 bg-black/50" />
-        <DialogContent className="z-50 max-w-md p-6 rounded-md shadow-lg  ">
+        <DialogContent className="z-50 max-w-md p-6 rounded-md shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              Add New Boat
-            </DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Add New Boat</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
             Please fill in the details of your boat. All fields are required.
@@ -102,12 +178,12 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
               />
             </div>
             <div>
-              <Label className="block text-sm font-medium">Type *</Label>
+              <Label className="block text-sm font-medium">Boat Type *</Label>
               <Select
                 key={`boat-type-${open}`}
-                value={newBoat.type}
+                value={newBoat.boatType}
                 onValueChange={(value) =>
-                  setNewBoat({ ...newBoat, type: value })
+                  setNewBoat({ ...newBoat, boatType: value })
                 }
               >
                 <SelectTrigger className="w-full mt-1">
@@ -116,11 +192,7 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
                 <SelectContent>
                   {["Catamaran", "Yacht", "Monohull", "RIB", "Speedboat"].map(
                     (type) => (
-                      <SelectItem
-                        key={type}
-                        value={type}
-                        className="cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800"
-                      >
+                      <SelectItem key={type} value={type}>
                         {type}
                       </SelectItem>
                     )
@@ -163,24 +235,23 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
             </div>
             <div>
               <Label className="block text-sm font-medium">Hotel *</Label>
+              {hotelError && (
+                <p className="text-red-500 text-sm mb-1">{hotelError}</p>
+              )}
               <Select
                 key={`hotel-${open}`}
-                value={newBoat.hotel}
+                value={newBoat.hotelId}
                 onValueChange={(value) =>
-                  setNewBoat({ ...newBoat, hotel: value })
+                  setNewBoat({ ...newBoat, hotelId: value })
                 }
               >
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select Hotel" />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Seaside Resort", "Mountain View Lodge"].map((hotel) => (
-                    <SelectItem
-                      key={hotel}
-                      value={hotel}
-                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800"
-                    >
-                      {hotel}
+                  {hotels.map((hotel) => (
+                    <SelectItem key={hotel.id} value={String(hotel.id)}>
+                      {hotel.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -197,24 +268,16 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
               >
                 <div className="flex items-center gap-1">
                   <RadioGroupItem value="Local" id="local" />
-                  <Label htmlFor="local" className="cursor-pointer">
-                    Local
-                  </Label>
+                  <Label htmlFor="local">Local</Label>
                 </div>
                 <div className="flex items-center gap-1">
                   <RadioGroupItem value="Foreign" id="foreign" />
-                  <Label htmlFor="foreign" className="cursor-pointer">
-                    Foreign
-                  </Label>
+                  <Label htmlFor="foreign">Foreign</Label>
                 </div>
               </RadioGroup>
             </div>
             <div className="flex justify-end">
-              <Button
-                onClick={handleAddBoat}
-                variant="default"
-                className="text-sm px-4 py-2"
-              >
+              <Button onClick={handleAddBoat} variant="default">
                 Add Boat
               </Button>
             </div>

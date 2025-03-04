@@ -120,7 +120,7 @@ model Boat {
   // New field for boat type and length
   boatType  BoatType @default(Monohull)
   length    Decimal  @default(0) @db.Decimal(10,2)
-
+  capacity  Int      @default(0)
   skipper            Skipper?
   bookings           Booking[]
   unavailability     BoatUnavailability[]
@@ -157,7 +157,6 @@ model Booking {
   boat             Boat          @relation(fields: [boatId], references: [id])
   boatId           String
   bookingDateTime  DateTime      
-  type             BookingType
   status           BookingStatus @default(Definitive)
   createdAt        DateTime      @default(now())
   requiresApproval Boolean       @default(false)
@@ -193,6 +192,7 @@ model CharterItinerary {
   boat                           Boat     @relation(fields: [boatId], references: [id])
   boatId                         String
   name                           String
+  type                           BookingType @default(FullDay) // Set a default value here
   netBoatRentalWithoutCommission Decimal  @db.Decimal(10,2)
   commission                     Decimal  @db.Decimal(10,2)
   netBoatRentalWithoutVAT        Decimal  @db.Decimal(10,2)
@@ -203,8 +203,8 @@ model CharterItinerary {
   ezsailSeaServicesCommission    Decimal  @db.Decimal(10,2)
   finalPrice                     Decimal  @db.Decimal(10,2)
 
-  // Opposite relation: a CharterItinerary may be selected by many bookings.
   bookings Booking[] @relation("Booking_CharterItinerary")
+   @@unique([name, type , boatId])
 }
 
 model Itinerary {

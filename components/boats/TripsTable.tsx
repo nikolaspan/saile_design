@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import {
   Table,
   TableBody,
@@ -9,202 +12,260 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { format, parseISO, isWithinInterval } from "date-fns";
-import { trips, getTripStatus } from "./data";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
+  SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
+import { format, parseISO } from "date-fns";
+
+interface Booking {
+  id: string;
+  bookingDateTime: string;
+  charterType: string;
+  boat: {
+    name: string;
+    hotel: {
+      name: string;
+    };
+  };
+  charterItinerary: {
+    name: string;
+    finalPrice: number;
+  };
+  status: string;
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TripsTable() {
   const router = useRouter();
 
-  // Use "All" as the default value for dropdowns
-  const [charterFilter, setCharterFilter] = useState<string>("All");
-  const [itineraryFilter, setItineraryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // Filter and sort state
+  const [sortField, setSortField] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterHotel, setFilterHotel] = useState<string>("");
+  const [filterItinerary, setFilterItinerary] = useState<string>("");
+  const [filterSingleDate, setFilterSingleDate] = useState<string>("");
+  const [filterStartDate, setFilterStartDate] = useState<string>("");
+  const [filterEndDate, setFilterEndDate] = useState<string>("");
 
-  // Filtering logic:
-  const filteredTrips = trips.filter((trip) => {
-    const { status } = getTripStatus(trip.date);
+  const { data: bookings, error } = useSWR<Booking[]>("/api/b2b/bookings", fetcher);
 
-    const charterMatches =
-      charterFilter === "All" || trip.charterType === charterFilter;
-    const itineraryMatches =
-      itineraryFilter === "" ||
-      trip.itineraryName.toLowerCase().includes(itineraryFilter.toLowerCase());
-    const statusMatches = statusFilter === "All" || status === statusFilter;
+  // Map bookings to trips, defaulting to an empty array if no data
+  const trips = useMemo(() => {
+    return bookings
+      ? bookings.map((booking) => ({
+          ...booking,
+          date: booking.bookingDateTime,
+        }))
+      : [];
+  }, [bookings]);
 
-    // Date filtering logic:
-    const tripDate = parseISO(trip.date);
-    let dateMatches = true;
-    if (startDate && endDate) {
-      // If both dates are provided, check if trip.date is within the interval
-      dateMatches = isWithinInterval(tripDate, {
-        start: parseISO(startDate),
-        end: parseISO(endDate),
-      });
-    } else if (startDate) {
-      // If only startDate is provided, filter trips that occur exactly on startDate
-      dateMatches = format(tripDate, "yyyy-MM-dd") === startDate;
-    } else if (endDate) {
-      // If only endDate is provided, filter trips that occur exactly on endDate
-      dateMatches = format(tripDate, "yyyy-MM-dd") === endDate;
+  // Compute status for a booking
+  const computeStatus = useCallback((tripDateStr: string, dbStatus: string) => {
+    const now = new Date();
+    const tripDate = parseISO(tripDateStr);
+    const formattedTripDate = format(tripDate, "yyyy-MM-dd");
+    const formattedNow = format(now, "yyyy-MM-dd");
+    if (formattedTripDate === formattedNow) {
+      return "Ongoing";
+    }
+    if (tripDate.getTime() < now.getTime()) {
+      return "Completed";
+    }
+    return dbStatus;
+  }, []);
+
+  // Return Tailwind classes based on status:
+  // Completed = green, Definitive = blue, others = orange.
+  const getBadgeVariant = (status: string) => {
+    if (status === "Completed") return "bg-green-500 text-white";
+    if (status === "Definitive") return "bg-blue-500 text-white";
+    return "bg-orange-500 text-white";
+  };
+
+  // Toggle sorting by Hotel Name
+  const handleSortHotel = () => {
+    if (sortField === "hotel") {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField("hotel");
+      setSortDirection("asc");
+    }
+  };
+
+  // Filter and sort trips based on filter/sort states
+  const filteredAndSortedTrips = useMemo(() => {
+    let filtered = [...trips];
+
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(
+        (trip) => computeStatus(trip.date, trip.status) === filterStatus
+      );
     }
 
-    return charterMatches && itineraryMatches && statusMatches && dateMatches;
-  });
+    if (filterHotel.trim() !== "") {
+      filtered = filtered.filter((trip) =>
+        trip.boat.hotel.name.toLowerCase().includes(filterHotel.toLowerCase())
+      );
+    }
 
-  // Define the status colors with proper type for TypeScript
-  const statusColors: Record<"green" | "blue" | "yellow", string> = {
-    green: "bg-green-500",
-    blue: "bg-[#26BDD8]", // Custom Aqua Blue (#26BDD8)
-    yellow: "bg-yellow-500",
+    if (filterItinerary.trim() !== "") {
+      filtered = filtered.filter((trip) =>
+        trip.charterItinerary.name.toLowerCase().includes(filterItinerary.toLowerCase())
+      );
+    }
+
+    if (filterSingleDate !== "") {
+      filtered = filtered.filter((trip) => {
+        const tripDate = format(parseISO(trip.date), "yyyy-MM-dd");
+        return tripDate === filterSingleDate;
+      });
+    } else if (filterStartDate !== "" && filterEndDate !== "") {
+      filtered = filtered.filter((trip) => {
+        const tripTime = new Date(trip.date).getTime();
+        const startTime = new Date(filterStartDate).getTime();
+        const endTime = new Date(filterEndDate).getTime();
+        return tripTime >= startTime && tripTime <= endTime;
+      });
+    }
+
+    if (sortField === "hotel") {
+      filtered.sort((a, b) => {
+        const nameA = a.boat.hotel.name.toLowerCase();
+        const nameB = b.boat.hotel.name.toLowerCase();
+        if (nameA < nameB) return sortDirection === "asc" ? -1 : 1;
+        if (nameA > nameB) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [
+    trips,
+    filterStatus,
+    filterHotel,
+    filterItinerary,
+    filterSingleDate,
+    filterStartDate,
+    filterEndDate,
+    sortField,
+    sortDirection,
+    computeStatus,
+  ]);
+
+  const handleBookingClick = (booking: Booking) => {
+    const encodedData = encodeURIComponent(JSON.stringify(booking));
+    router.push(`/dashboard/b2b/bookings/${booking.id}?data=${encodedData}`);
   };
+
+  if (error) return <div>Error loading trips.</div>;
+  if (!bookings) return <div>Loading trips...</div>;
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Charters</h2>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-end gap-4">
-        {/* Charter Type Filter */}
-        <div className="flex flex-col">
-          <span className="mb-1 text-sm font-medium">Charter Type</span>
-          <Select
-            value={charterFilter}
-            onValueChange={(value) => setCharterFilter(value)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="All Charter Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All</SelectItem>
-              <SelectItem value="Half Day">Half Day</SelectItem>
-              <SelectItem value="Full Day">Full Day</SelectItem>
-              <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
-              <SelectItem value="Sunset Cruise">Sunset Cruise</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Itinerary Name Search */}
-        <div className="flex flex-col">
-          <span className="mb-1 text-sm font-medium">Charter Itinerary</span>
-          <Input
-            placeholder="Search Charter Itinerary"
-            className="w-64"
-            value={itineraryFilter}
-            onChange={(e) => setItineraryFilter(e.target.value)}
-          />
-        </div>
-
+      {/* Filter Options using shadcn components */}
+      <div className="flex flex-wrap gap-4">
         {/* Status Filter */}
         <div className="flex flex-col">
-          <span className="mb-1 text-sm font-medium">Status</span>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
+          <label className="text-sm font-medium text-muted-foreground">Status</label>
+          <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value)}>
+            <SelectTrigger>{filterStatus}</SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
-              <SelectItem value="Upcoming">Upcoming</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="Ongoing">Ongoing</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="Tentative">Tentative</SelectItem>
+              <SelectItem value="Definitive">Definitive</SelectItem>
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        {/* Date Range Filter */}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Start Date</span>
+        {/* Hotel Name Filter */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-muted-foreground">Hotel Name</label>
           <Input
-            type="date"
-            className="w-48"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            type="text"
+            value={filterHotel}
+            onChange={(e) => setFilterHotel(e.target.value)}
+            placeholder="Filter by hotel"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">End Date</span>
+        {/* Itinerary Name Filter */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-muted-foreground">Itinerary Name</label>
           <Input
-            type="date"
-            className="w-48"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            type="text"
+            value={filterItinerary}
+            onChange={(e) => setFilterItinerary(e.target.value)}
+            placeholder="Search by Itinerary"
           />
         </div>
-
-        {/* Reset Filters Button */}
-        <Button
-          variant="outline"
-          onClick={() => {
-            setCharterFilter("All");
-            setItineraryFilter("");
-            setStatusFilter("All");
-            setStartDate("");
-            setEndDate("");
-          }}
-        >
-          Reset Filters
-        </Button>
+        {/* Single Date Filter */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-muted-foreground">Single Date</label>
+          <Input
+            type="date"
+            value={filterSingleDate}
+            onChange={(e) => setFilterSingleDate(e.target.value)}
+          />
+        </div>
+        {/* Date Range Filters */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-muted-foreground">Start Date</label>
+          <Input
+            type="date"
+            value={filterStartDate}
+            onChange={(e) => setFilterStartDate(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-muted-foreground">End Date</label>
+          <Input
+            type="date"
+            value={filterEndDate}
+            onChange={(e) => setFilterEndDate(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="border rounded-lg shadow-md overflow-hidden">
+      <div className="border rounded-lg shadow-sm overflow-hidden">
         <div className="max-h-96 overflow-y-auto">
           <Table>
-            {/* Sticky Table Header */}
-            <TableHeader className="sticky top-0 z-10 shadow-md">
+            <TableHeader className="sticky top-0 z-10 shadow-sm">
               <TableRow>
-                <TableHead className="text-left">Charter Type</TableHead>
-                <TableHead className="text-left">Charter Itinerary </TableHead>
+                <TableHead className="text-left">Charter Itinerary</TableHead>
+                <TableHead className="text-left">Boat</TableHead>
+                <TableHead className="text-left cursor-pointer" onClick={handleSortHotel}>
+                  Hotel Name {sortField === "hotel" && (sortDirection === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-left">Final Price</TableHead>
                 <TableHead className="text-left">Date</TableHead>
                 <TableHead className="text-left">Status</TableHead>
               </TableRow>
             </TableHeader>
-
-            {/* Table Body */}
             <TableBody>
-              {filteredTrips.length > 0 ? (
-                filteredTrips.map((trip) => {
-                  const { status, color } = getTripStatus(trip.date);
-                  const badgeColor =
-                    statusColors[color as keyof typeof statusColors] ||
-                    "bg-gray-400";
-
+              {filteredAndSortedTrips.length > 0 ? (
+                filteredAndSortedTrips.map((trip) => {
+                  const tripDate = parseISO(trip.date);
+                  const computedStatus = computeStatus(trip.date, trip.status);
                   return (
-                    <TableRow
-                      key={trip.id}
-                      className="cursor-pointer "
-                      onClick={() =>
-                        router.push(`/dashboard/b2b/bookings/${trip.id}`)
-                      }
-                    >
+                    <TableRow key={trip.id} className="cursor-pointer" onClick={() => handleBookingClick(trip)}>
+                      <TableCell className="text-left">{trip.charterItinerary.name}</TableCell>
+                      <TableCell className="text-left">{trip.boat.name}</TableCell>
+                      <TableCell className="text-left">{trip.boat.hotel.name}</TableCell>
+                      <TableCell className="text-left">€{trip.charterItinerary.finalPrice}</TableCell>
+                      <TableCell className="text-left">{format(tripDate, "yyyy-MM-dd")}</TableCell>
                       <TableCell className="text-left">
-                        {trip.charterType}
-                      </TableCell>
-                      <TableCell className="text-left">
-                        {trip.itineraryName}
-                      </TableCell>
-                      <TableCell className="text-left">
-                        {format(parseISO(trip.date), "yyyy-MM-dd")}
-                      </TableCell>
-                      <TableCell className="text-left">
-                        <Badge
-                          className={`${badgeColor} text-white px-3 py-1 rounded-full`}
-                        >
-                          {status}
+                        <Badge className={getBadgeVariant(computedStatus)}>
+                          {computedStatus}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -212,7 +273,7 @@ export default function TripsTable() {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">
+                  <TableCell colSpan={6} className="text-center py-4">
                     No results found
                   </TableCell>
                 </TableRow>

@@ -35,24 +35,13 @@ export const roleMenus: RoleMenus = {
       items: [
         { title: "Skipper", url: "/dashboard/b2b/", icon: User },
         { title: "Boats", url: "/dashboard/b2b/boats", icon: Ship },
-        { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus },
-        { title: "Overview", url: "/dashboard/b2b/analytics", icon: Calendar },
-        { title: "Bookings", url: "/dashboard/b2b", icon: Users, isActive: true },
+        { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus },    
         { title: "Analytics", url: "/dashboard/b2b/analytics", icon: PieChart },
+        { title: "Profile", url: "/dashboard/b2b", icon: User, disabled: true },
        
       ],
     },
     
-    {
-      title: "Settings",
-      url: "/dashboard/b2b",
-      disabled: true, // This item is disabled
-      icon: Settings2,
-      items: [
-        { title: "Profile", url: "/dashboard/b2b", icon: User, disabled: true },
-        { title: "Options", url: "/dashboard/b2b", icon: Settings2, disabled: true },
-      ],
-    },
   ],
   Concierge: [
     {

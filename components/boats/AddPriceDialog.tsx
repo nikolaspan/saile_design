@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -15,84 +18,172 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check } from "lucide-react";
+import { Check, AlertTriangle } from "lucide-react";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface AddPriceDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  boatId: string;
+  ezsailCommissionPercentage: number;
+  previousItineraries: string[];
+  onPriceAdded?: () => void;
 }
 
 export default function AddPriceDialog({
   open,
   setOpen,
+  boatId,
+  ezsailCommissionPercentage,
+  previousItineraries,
+  onPriceAdded,
 }: AddPriceDialogProps) {
   const [newPrice, setNewPrice] = useState({
-    charterType: "Half Day", 
-    CharteritineraryName: "",
+    charterType: "Half Day",
+    itineraryName: "",
     rentalPriceWithoutCommission: "",
     commission: "",
     fuelCost: "",
   });
 
-  const handleAddPrice = () => {
-    const {
-      charterType,
-      CharteritineraryName,
-      rentalPriceWithoutCommission,
-      commission,
-      fuelCost,
-    } = newPrice;
+  const [vat, setVat] = useState<number>(0);
+  const [ezSailCommission, setEzSailCommission] = useState<number>(0);
+  const [finalPrice, setFinalPrice] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const netBoatRentalWithoutCommission = Number(newPrice.rentalPriceWithoutCommission);
+    const commission = Number(newPrice.commission);
+    const fuelCost = Number(newPrice.fuelCost);
 
     if (
-      charterType &&
-      CharteritineraryName &&
-      rentalPriceWithoutCommission &&
-      commission &&
-      fuelCost
+      isNaN(netBoatRentalWithoutCommission) ||
+      isNaN(commission) ||
+      isNaN(fuelCost) ||
+      netBoatRentalWithoutCommission < 0 ||
+      commission < 0 ||
+      fuelCost < 0
     ) {
-      const netRental =
-        Number(rentalPriceWithoutCommission) + Number(commission);
-      const vat = netRental * 0.24;
-      const finalPrice = netRental + vat + Number(fuelCost);
+      setVat(0);
+      setEzSailCommission(0);
+      setFinalPrice(0);
+      return;
+    }
 
-      console.log("New Price:", {
-        charterType,
-        CharteritineraryName,
-        rentalPriceWithoutCommission: Number(rentalPriceWithoutCommission),
-        commission: Number(commission),
-        netRental,
-        vat,
-        fuelCost: Number(fuelCost),
-        finalPrice,
+    // 1) netBoatRentalWithoutVAT = Net Boat Rental without Commission + Commission
+    const netBoatRentalWithoutVAT = netBoatRentalWithoutCommission + commission;
+    // 2) VAT = netBoatRentalWithoutVAT * 0.24
+    const vatValue = netBoatRentalWithoutVAT * 0.24;
+    // 3) Boat Rental/Day = netBoatRentalWithoutVAT + VAT
+    const boatRentalDay = netBoatRentalWithoutVAT + vatValue;
+    // 4) Price VAT & Fuel Included = Boat Rental/Day + Fuel Cost
+    const priceVATAndFuelIncluded = boatRentalDay + fuelCost;
+    // 5) EzSail Sea Services Commission = netBoatRentalWithoutVAT * (ezsailCommissionPercentage / 100)
+    const ezSailCommissionValue = netBoatRentalWithoutVAT * (ezsailCommissionPercentage / 100);
+    // 6) Final Price = Price VAT & Fuel Included + EzSail Sea Services Commission
+    const finalPriceValue = priceVATAndFuelIncluded + ezSailCommissionValue;
+
+    setVat(vatValue);
+    setEzSailCommission(ezSailCommissionValue);
+    setFinalPrice(finalPriceValue);
+  }, [
+    newPrice.rentalPriceWithoutCommission,
+    newPrice.commission,
+    newPrice.fuelCost,
+    ezsailCommissionPercentage,
+  ]);
+
+  async function createCharterItinerary(data: {
+    boatId: string;
+    charterType: string;
+    itineraryName: string;
+    rentalPriceWithoutCommission: number;
+    commission: number;
+    fuelCost: number;
+  }) {
+    const response = await fetch(`/api/b2b/boats/${data.boatId}/charterItineraries`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        charterType: data.charterType,
+        itineraryName: data.itineraryName,
+        rentalPriceWithoutCommission: data.rentalPriceWithoutCommission,
+        commission: data.commission,
+        fuelCost: data.fuelCost,
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to create charter itinerary");
+    }
+    return response.json();
+  }
+
+  const handleSave = async () => {
+    if (
+      !newPrice.itineraryName.trim() ||
+      isNaN(Number(newPrice.rentalPriceWithoutCommission)) ||
+      isNaN(Number(newPrice.commission)) ||
+      isNaN(Number(newPrice.fuelCost))
+    ) {
+      setError("All fields must have valid numbers before submitting.");
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const result = await createCharterItinerary({
+        boatId,
+        charterType: newPrice.charterType,
+        itineraryName: newPrice.itineraryName,
+        rentalPriceWithoutCommission: Number(newPrice.rentalPriceWithoutCommission),
+        commission: Number(newPrice.commission),
+        fuelCost: Number(newPrice.fuelCost),
       });
 
-      // Reset form and close dialog
+      toast.success("Price successfully added!", {
+        description: `Final Price: €${Number(result.finalPrice).toFixed(2)}`,
+      });
+
       setNewPrice({
-        charterType: "Half Day", // Reset to default
-        CharteritineraryName: "",
+        charterType: "Half Day",
+        itineraryName: "",
         rentalPriceWithoutCommission: "",
         commission: "",
         fuelCost: "",
       });
       setOpen(false);
+      onPriceAdded?.();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      toast.error("Error saving price. Please try again.");
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="max-w-lg rounded-xl p-6 space-y-4">
         <DialogHeader>
-          <DialogTitle>Add New Price</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            Add New Price
+          </DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4">
-          {/* Predefined Charter Type Dropdown */}
-          <div className="space-y-1">
+          {/* Charter Type */}
+          <div className="space-y-2">
             <Label>Charter Type</Label>
             <Select
               value={newPrice.charterType}
-              onValueChange={(value) =>
-                setNewPrice({ ...newPrice, charterType: value })
-              }
+              onValueChange={(value) => setNewPrice({ ...newPrice, charterType: value })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Charter Type" />
@@ -106,24 +197,43 @@ export default function AddPriceDialog({
             </Select>
           </div>
 
-          {/* Itinerary Name */}
-          <div className="space-y-1">
+          {/* Charter Itinerary Name with Autocomplete */}
+          <div className="space-y-2">
             <Label>Charter Itinerary Name</Label>
-            <Input
-              placeholder="Charter Itinerary Name"
-              value={newPrice.CharteritineraryName}
-              onChange={(e) =>
-                setNewPrice({ ...newPrice, CharteritineraryName: e.target.value })
-              }
-            />
+            <Command>
+              <CommandInput
+                placeholder="Enter Charter Itinerary name"
+                value={newPrice.itineraryName}
+                onValueChange={(value) =>
+                  setNewPrice({ ...newPrice, itineraryName: value })
+                }
+              />
+              <CommandList>
+                {previousItineraries
+                  .filter((name) =>
+                    name.toLowerCase().includes(newPrice.itineraryName.toLowerCase())
+                  )
+                  .map((name, index) => (
+                    <CommandItem
+                      key={`${name}-${index}`}
+                      onSelect={(currentValue) =>
+                        setNewPrice({ ...newPrice, itineraryName: currentValue })
+                      }
+                    >
+                      {name}
+                    </CommandItem>
+                  ))}
+              </CommandList>
+            </Command>
           </div>
 
           {/* Rental Price Without Commission */}
-          <div className="space-y-1">
-            <Label>Rental Price Without Commission (€)</Label>
+          <div className="space-y-2">
+            <Label>Net Rental Price (€)</Label>
             <Input
-              placeholder="Rental Price Without Commission (€)"
               type="number"
+              placeholder="0.00"
+              min="0"
               value={newPrice.rentalPriceWithoutCommission}
               onChange={(e) =>
                 setNewPrice({
@@ -135,11 +245,12 @@ export default function AddPriceDialog({
           </div>
 
           {/* Commission */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label>Commission (€)</Label>
             <Input
-              placeholder="Commission (€)"
               type="number"
+              placeholder="0.00"
+              min="0"
               value={newPrice.commission}
               onChange={(e) =>
                 setNewPrice({ ...newPrice, commission: e.target.value })
@@ -147,24 +258,49 @@ export default function AddPriceDialog({
             />
           </div>
 
-          {/* Fuel Cost */}
-          <div className="space-y-1">
-            <Label>Fuel Cost (€)</Label>
-            <Input
-              placeholder="Fuel Cost (€)"
-              type="number"
-              value={newPrice.fuelCost}
-              onChange={(e) =>
-                setNewPrice({ ...newPrice, fuelCost: e.target.value })
-              }
-            />
+          {/* VAT & Fuel Cost */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>VAT (24%) (€)</Label>
+              <Input type="text" value={vat.toFixed(2)} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Fuel Cost (€)</Label>
+              <Input
+                type="number"
+                placeholder="0.00"
+                min="0"
+                value={newPrice.fuelCost}
+                onChange={(e) =>
+                  setNewPrice({ ...newPrice, fuelCost: e.target.value })
+                }
+              />
+            </div>
           </div>
 
-          {/* Save Button */}
-          <Button onClick={handleAddPrice}>
-            <Check className="mr-2" /> Save
-          </Button>
+          {/* EzSail Commission & Final Price */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>EzSail Commission ({ezsailCommissionPercentage}%) (€)</Label>
+              <Input type="text" value={ezSailCommission.toFixed(2)} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Final Price (€)</Label>
+              <Input type="text" value={finalPrice.toFixed(2)} disabled />
+            </div>
+          </div>
         </div>
+
+        {error && (
+          <div className="mt-2 flex items-center text-red-600">
+            <AlertTriangle className="mr-2" />
+            {error}
+          </div>
+        )}
+
+        <Button className="w-full mt-4" onClick={handleSave} disabled={!!error}>
+          <Check className="mr-2" /> Save
+        </Button>
       </DialogContent>
     </Dialog>
   );

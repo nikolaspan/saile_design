@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -14,8 +13,8 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { roleMenus } from "@/lib/roleMenus";
-import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { Toaster } from "sonner"; // Import Sonner's Toaster
 
 const SidebarTrigger = ({ className }: { className?: string }) => {
   const { openSidebar } = useSidebar();
@@ -32,8 +31,7 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, role }: LayoutProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
+  useSession();
 
   return (
     <SidebarProvider>
@@ -77,6 +75,8 @@ export default function Layout({ children, role }: LayoutProps) {
           <main className="flex-1 overflow-y-auto p-4 pb-16">{children}</main>
         </div>
       </div>
+      {/* Sonner Toaster to display toast notifications */}
+      <Toaster richColors />
     </SidebarProvider>
   );
 }
