@@ -1,17 +1,13 @@
-// app/api/b2b/bookings/[id]/cancel/route.ts
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"; // Adjust the import path as needed
 
-export async function POST(
-  request: Request,
-  context: { params: { id: string } }
-) {
-  // Await the context before destructuring params
-  const { params } = await Promise.resolve(context);
-  const bookingId = params.id;
-
+export async function POST(request: Request) {
   try {
+    // Extract the bookingId from the URL path
+    const { pathname } = new URL(request.url);
+    const pathSegments = pathname.split("/");
+    const bookingId = pathSegments[pathSegments.length - 2]; // The second-to-last segment should be the bookingId
+
     // Update the booking status to "Cancelled"
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
