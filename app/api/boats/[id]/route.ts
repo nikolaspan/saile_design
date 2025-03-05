@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request) {
   try {
-    // Ensure the user is authenticated as a concierge.
+    // Extract the boatId from the URL path
+    const { pathname } = new URL(request.url);
+    const pathSegments = pathname.split("/");
+    const boatId = pathSegments[pathSegments.length - 2]; // The second-to-last segment should be the boatId
+
+    // Ensure the user is authenticated as a concierge
     const session = await getServerSession(authOptions);
     if (
       !session ||
@@ -18,12 +20,11 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const boatId = params.id;
     if (!boatId) {
       return NextResponse.json({ error: "Boat ID is missing" }, { status: 400 });
     }
 
-    // Retrieve the boat with its itineraries and charter itineraries.
+    // Retrieve the boat with its itineraries and charter itineraries
     const boat = await prisma.boat.findUnique({
       where: { id: boatId },
       include: {
