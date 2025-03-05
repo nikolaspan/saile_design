@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function DELETE(req: Request, context: { params: { id: string; itineraryId: string } }) {
+// This function will delete an itinerary based on the dynamic URL parameters [id] and [itineraryId]
+export async function DELETE(req: Request, { params }: { params: { id: string; itineraryId: string } }) {
   try {
-    const { itineraryId } = context.params;  // Correct way to access params
+    const { itineraryId } = params; // Use the params from the context object
 
     if (!itineraryId) {
       return NextResponse.json({ error: "Missing itinerary ID" }, { status: 400 });
