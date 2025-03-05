@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Define the Params type for the dynamic route
+interface Params {
+  id: string;
+  itineraryId: string;
+}
+
 // This function will delete an itinerary based on the dynamic URL parameters [id] and [itineraryId]
-export async function DELETE(req: Request, { params }: { params: { id: string; itineraryId: string } }) {
+export async function DELETE(req: Request, { params }: { params: Params }) {
   try {
     const { itineraryId } = params; // Destructure params
 
