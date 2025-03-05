@@ -1,16 +1,91 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
+import useSWR from "swr";
 import DashboardLayout from "../../../layouts/DashboardLayout";
-import { YachtTable } from "@/components/b2b/analytics/YachtTable";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { AnalyticsFilter } from "@/components/b2b/analytics/AnalyticsFilter";
+import { AnalyticsTable, YachtData } from "@/components/b2b/analytics/AnalyticsTable";
+
+// Fetcher function
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AnalyticsPage() {
+  const { data, error, isLoading } = useSWR<YachtData[]>("/api/b2b/bookings/analytics", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  // Filters
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [boatNameFilter, setBoatNameFilter] = useState("");
+
+  // Filtered Data
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    return data.filter((row) => {
+      const matchesBoatName =
+        boatNameFilter === "" || row.boatName.toLowerCase().includes(boatNameFilter.toLowerCase());
+      return matchesBoatName;
+    });
+  }, [data, boatNameFilter]);
+
+  // Export to CSV
+  const exportToCSV = () => {
+    if (!filteredData || filteredData.length === 0) {
+      alert("No data available for export!");
+      return;
+    }
+
+    const headers = [
+      "Pax", "Confirmed by", "F&B", "Status", "Comments", "Boat", "Cruise", "Duration",
+      "Net Boat Rental without Commission", "Commission", "Net Boat Rental without VAT",
+      "VAT 24%", "Boat Rental/Day", "Fuel Cost", "Final Price VAT & Fuel Included", "EzSail Sea Services Commission"
+    ];
+    
+    const csvRows = [headers.join(",")];
+
+    filteredData.forEach((row) => {
+      const values = [
+        row.passengerCount, row.confirmedBy, row.itinerary, row.status, row.comments,
+        row.boatName, row.charterName, row.charterType, row.netBoatRentalWithoutCommission,
+        row.commission, row.netBoatRentalWithoutVAT, row.vat24, row.boatRentalDay,
+        row.fuelCost, row.priceVATAndFuelIncluded, row.ezSailSeaServicesCommission
+      ].map(val => `"${val}"`).join(",");
+      csvRows.push(values);
+    });
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "analytics.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DashboardLayout role="B2B">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Analytics</h1>
-        <YachtTable />
-      </div>
+      <Card>
+        <CardHeader><h2>Analytics Table</h2></CardHeader>
+        <CardContent>
+          <AnalyticsFilter 
+            startDate={startDate} 
+            setStartDate={setStartDate} 
+            endDate={endDate} 
+            setEndDate={setEndDate} 
+            boatNameFilter={boatNameFilter} 
+            setBoatNameFilter={setBoatNameFilter} 
+            onExport={exportToCSV} 
+          />
+          {isLoading && <p>Loading...</p>}
+          {error && <p>Error loading data</p>}
+          {!isLoading && !error && <AnalyticsTable data={filteredData} />}
+        </CardContent>
+      </Card>
     </DashboardLayout>
   );
 }

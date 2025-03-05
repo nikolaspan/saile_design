@@ -1,248 +1,166 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
 import DashboardLayout from "../../../../layouts/DashboardLayout";
-import BookingSearchForm from "@/components/concierge/BookingSearchForm";
-import BoatSelection, { Boat } from "@/components/concierge/BoatSelection";
-import PassengerForm, { PassengerInfo, ItineraryOption } from "@/components/concierge/PassengerForm";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import BookingSearchForm from "@/components/concierge/BookingSearchForm";
+import BoatSelection from "@/components/concierge/BoatSelection";
+import PassengerForm from "@/components/concierge/PassengerForm";
 
-import boatsData from "@/components/concierge/boats.json";
-const allBoats = boatsData.boats as unknown as Boat[];
+interface SearchParams {
+  charterItineraryName: string;
+  tripType: string;
+  numPassengers: number;
+  date: Date | null;
+  boatType: string | null;
+}
 
+interface Boat {
+  id: string;
+  name: string;
+  capacity: number;
+  boatType: string;
+  hasTentative: boolean;
+}
 
-// Import preloaded tentative bookings and convert via unknown
-import preloadedTentativeBookings from "@/components/concierge/tentativeBookings.json";
-const initialTentativeBookings = preloadedTentativeBookings as unknown as Booking[];
+interface ItineraryOption {
+  name: string;
+  price: number;
+}
 
-interface Booking {
-  bookingType: "Definitive" | "Tentative";
-  selectedBoat: Boat;
-  date: string;
-  passengers: PassengerInfo[];
+interface BookingFormData {
+  passengers: {
+    fullName: string;
+    idNumber: string;
+    birth: Date | null;
+  }[];
   itineraries: ItineraryOption[];
   hour: string;
+  bookingType: "Definitive" | "Tentative";
 }
 
 export default function NewBookingPage() {
-  const role = "Concierge";
-  const [step, setStep] = useState<number>(1);
-  const [destination, setDestination] = useState<string>("");
-  const [passengerCount, setPassengerCount] = useState<number>(0);
-  const [date, setDate] = useState<Date | null>(null);
-  const [tripType, setTripType] = useState<string>("Full-day");
-  const [filteredBoats, setFilteredBoats] = useState<Boat[]>([]);
-  const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
-  const [passengers, setPassengers] = useState<PassengerInfo[]>([]);
-  const [selectedItinerary, setSelectedItinerary] = useState<ItineraryOption[]>([]);
-  const [hour, setHour] = useState<string>("");
-  const [tentativeBookings, setTentativeBookings] = useState<Booking[]>(initialTentativeBookings);
-
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    charterItineraryName: "",
+    tripType: "",
+    numPassengers: 0,
+    date: null,
+    boatType: null,
+  });
+  const [boats, setBoats] = useState<Boat[]>([]);
+  const [step, setStep] = useState<number>(1);
+  const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
+  const [conciergeId, setConciergeId] = useState<string | null>(null);
 
+  // Fetch conciergeId from the server on component mount
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedDateParam = urlParams.get("date");
-    if (selectedDateParam) {
-      setDate(new Date(selectedDateParam));
-    }
-  }, []);
-
-  const handleSearch = () => {
-    if (!date) {
-      toast({
-        title: "Missing Date",
-        description: "Please select a date before searching.",
-      });
-      return;
-    }
-    const formattedDate = format(date, "yyyy-MM-dd");
-    const lowerCaseDestination = destination.toLowerCase();
-
-    const filtered = allBoats.filter((boat: Boat) =>
-      boat.destinations.some((dest: string) => dest.toLowerCase() === lowerCaseDestination) &&
-      boat.capacity >= passengerCount &&
-      !boat.notAvailableDates.includes(formattedDate) &&
-      boat.tripTypes.includes(tripType)
-    );
-    setFilteredBoats(filtered);
-    setStep(2);
-  };
-
-  const handleBoatSelect = (boat: Boat) => {
-    setSelectedBoat(boat);
-    setPassengers(
-      Array.from({ length: passengerCount }, () => ({
-        fullName: "",
-        idNumber: "",
-        birth: null,
-      }))
-    );
-    setSelectedItinerary([]);
-    setStep(3);
-  };
-
-  const handlePassengerChange = (index: number, field: keyof PassengerInfo, value: unknown) => {
-    const newPassengers = [...passengers];
-    newPassengers[index] = { ...newPassengers[index], [field]: value };
-    setPassengers(newPassengers);
-  };
-
-  const handleItineraryChange = (option: ItineraryOption, checked: boolean): void => {
-    if (checked) {
-      setSelectedItinerary((prev) => {
-        if (prev.some((item) => item.name === option.name)) return prev;
-        return [...prev, option];
-      });
-    } else {
-      setSelectedItinerary((prev) => prev.filter((item) => item.name !== option.name));
-    }
-  };
-
-  const handleSubmit = async (data: {
-    passengers: PassengerInfo[];
-    itineraries: ItineraryOption[];
-    hour: string;
-    bookingType: "Definitive" | "Tentative";
-  }) => {
-    if (!date) {
-      toast({
-        title: "Missing Date",
-        description: "Please select a date before submitting your booking.",
-      });
-      return;
-    }
-    if (!selectedBoat) {
-      toast({
-        title: "Missing Boat",
-        description: "Please select a boat before submitting your booking.",
-      });
-      return;
-    }
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
-    const formattedDate = format(date, "yyyy-MM-dd");
-    const bookingDetails: Booking = {
-      ...data,
-      selectedBoat,
-      date: formattedDate,
-    };
-
-    if (data.bookingType === "Tentative") {
-      setTentativeBookings((prev) => [...prev, bookingDetails]);
-      toast({
-        title: "Tentative booking saved!",
-        description: "Your tentative booking is saved. A definitive booking can replace this later.",
-      });
-      // Reset state
-      setStep(1);
-      setDestination("");
-      setPassengerCount(0);
-      setDate(null);
-      setTripType("Full-day");
-      setFilteredBoats([]);
-      setSelectedBoat(null);
-      setPassengers([]);
-      setSelectedItinerary([]);
-      setHour("");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (data.bookingType === "Definitive") {
-      setTentativeBookings((prev) =>
-        prev.filter(
-          (booking) =>
-            !(booking.selectedBoat.boatId === selectedBoat.boatId && booking.date === formattedDate)
-        )
-      );
-    }
-
-    try {
-      const response = await fetch("/api/sendEmail", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingDetails),
-      });
-      if (response.ok) {
-        toast({
-          title: "Booking submitted!",
-          description: "Your booking email was sent successfully.",
-        });
-        // Reset state
-        setStep(1);
-        setDestination("");
-        setPassengerCount(0);
-        setDate(null);
-        setTripType("Full-day");
-        setFilteredBoats([]);
-        setSelectedBoat(null);
-        setPassengers([]);
-        setSelectedItinerary([]);
-        setHour("");
+    const fetchConciergeId = async () => {
+      const response = await fetch("/api/concierge/me");
+      const data = await response.json();
+      if (data.hotelId) {
+        setConciergeId(data.hotelId);
       } else {
         toast({
           title: "Error",
-          description: "Email sending failed. Please try again.",
+          description: "Concierge not found.",
+        });
+      }
+    };
+    fetchConciergeId();
+  }, [toast]);
+
+  const handleSearch = async () => {
+    if (
+      !searchParams.charterItineraryName ||
+      !searchParams.tripType ||
+      !searchParams.date ||
+      searchParams.numPassengers <= 0 ||
+      !conciergeId
+    ) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill out all fields before searching.",
+      });
+      return;
+    }
+
+    const formattedDate = format(searchParams.date, "yyyy-MM-dd");
+
+    let url = `/api/concierge/boats/available?date=${formattedDate}&passengerCount=${searchParams.numPassengers}&charterName=${searchParams.charterItineraryName}&charterType=${searchParams.tripType}&conciergeId=${conciergeId}`;
+
+    if (searchParams.boatType) {
+      url += `&boatType=${searchParams.boatType}`;
+    }
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (res.ok) {
+        setBoats(data.boats);
+        setStep(2);
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to fetch available boats",
         });
       }
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error searching boats:", error);
       toast({
         title: "Error",
-        description: "Internal Server Error. Please try again.",
+        description: "An error occurred while searching for boats.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  const handleSelectBoat = (boat: Boat) => {
+    setSelectedBoat(boat);
+    setStep(3);
+  };
+
+  const handleSubmitBooking = (data: BookingFormData) => {
+    console.log("Submitted booking data:", data);
+    // Proceed with API call or further processing
+  };
+
   return (
-    <DashboardLayout role={role}>
-      <div className="p-6 space-y-6">
-        {step === 1 && (
-          <BookingSearchForm
-            destination={destination}
-            setDestination={setDestination}
-            passengerCount={passengerCount}
-            setPassengerCount={setPassengerCount}
-            date={date}
-            setDate={setDate}
-            tripType={tripType}
-            setTripType={setTripType}
-            onSearch={handleSearch}
-          />
-        )}
+    <DashboardLayout role="Concierge">
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-xl mx-auto">
+          {step === 1 && (
+            <BookingSearchForm
+              searchParams={searchParams}
+              setSearchParams={setSearchParams}
+              onSearch={handleSearch}
+              hotelId="5b73ee7b-d760-4f22-b835-d17abc63a049" // Example hotelId, can be replaced
+            />
+          )}
 
-        {step === 2 && (
-          <BoatSelection
-            boats={filteredBoats}
-            destination={destination}
-            tripType={tripType}
-            onBoatSelect={handleBoatSelect}
-            onBack={() => setStep(1)}
-            bookingDate={date ? format(date, "yyyy-MM-dd") : ""}
-            tentativeBookings={tentativeBookings}
-          />
-        )}
+          {step === 2 && (
+            <BoatSelection
+              boats={boats}
+              onBack={() => setStep(1)}
+              bookingDate={format(searchParams.date!, "yyyy-MM-dd")}
+              onSelectBoat={handleSelectBoat}
+            />
+          )}
 
-        {step === 3 && selectedBoat && (
-          <PassengerForm
-            passengers={passengers}
-            onPassengerChange={handlePassengerChange}
-            onBack={() => setStep(2)}
-            selectedBoatName={selectedBoat.name}
-            itineraryOptions={selectedBoat.itinerary}
-            selectedItinerary={selectedItinerary}
-            hour={hour}
-            setHour={setHour}
-            onSubmit={handleSubmit}
-            onItineraryChange={handleItineraryChange}
-          />
-        )}
+          {step === 3 && selectedBoat && (
+            <PassengerForm
+              onBack={() => setStep(2)}
+              onSubmit={handleSubmitBooking}
+              selectedBoatName={selectedBoat.name}
+              itineraryOptions={[]}
+              selectedItinerary={[]}
+              onItineraryChange={() => {}}
+              hour=""
+              setHour={() => {}}
+              passengerCount={searchParams.numPassengers} // Passing the number of passengers
+            />
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

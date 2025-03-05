@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import DatePicker from "@/components/ui/date-picker";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
+import DatePicker from "@/components/ui/date-picker";
 import {
   Command,
   CommandInput,
@@ -18,139 +18,195 @@ import {
   CommandItem,
   CommandEmpty,
 } from "@/components/ui/command";
-import boatsData from "@/components/concierge/boats.json";
 
-interface Boat {
-  boatId: string;
+interface CharterItinerary {
+  id: string;
   name: string;
-  destinations: string[];
-  prices: Partial<Record<string, Record<string, number>>>;
-  capacity: number;
-  notAvailableDates: string[];
-  tripTypes: string[];
-  itinerary: { name: string; price: number }[];
 }
-
-// Define the structure of JSON.
-interface BoatsData {
-  boats: Boat[];
-}
-
-// Convert the imported JSON to our type.
-const { boats: allBoats } = boatsData as BoatsData;
-
-// Extract unique destinations from all boats.
-const availableDestinations = Array.from(
-  new Set(allBoats.flatMap((boat) => boat.destinations))
-);
 
 interface BookingSearchFormProps {
-  destination: string;
-  setDestination: (value: string) => void;
-  passengerCount: number;
-  setPassengerCount: (value: number) => void;
-  date: Date | null;
-  setDate: (value: Date) => void;
-  tripType: string;
-  setTripType: (value: string) => void;
+  hotelId: string;
+  searchParams: {
+    charterItineraryName: string;
+    tripType: string;
+    numPassengers: number;
+    date: Date | null;
+    boatType: string | null;
+  };
+  setSearchParams: React.Dispatch<
+    React.SetStateAction<{
+      charterItineraryName: string;
+      tripType: string;
+      numPassengers: number;
+      date: Date | null;
+      boatType: string | null;
+    }>
+  >;
   onSearch: () => void;
 }
 
 const BookingSearchForm: React.FC<BookingSearchFormProps> = ({
-  destination,
-  setDestination,
-  passengerCount,
-  setPassengerCount,
-  date,
-  setDate,
-  tripType,
-  setTripType,
+  hotelId,
+  searchParams,
+  setSearchParams,
   onSearch,
 }) => {
-  // Local state to control whether the dropdown is visible.
-  const [focused, setFocused] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<CharterItinerary[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  // Filter suggestions based on user input (case-insensitive).
-  const filteredSuggestions = destination
-    ? availableDestinations.filter((dest) =>
-        dest.toLowerCase().includes(destination.toLowerCase())
-      )
-    : availableDestinations;
+  const { charterItineraryName } = searchParams;
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (charterItineraryName.trim().length > 0) {
+        setLoadingSuggestions(true);
+        fetch(
+          `/api/concierge/ai-suggestions?hotelId=${hotelId}&query=${encodeURIComponent(
+            charterItineraryName
+          )}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setSuggestions(data.itineraries || []);
+          })
+          .catch((error) => {
+            console.error("Error fetching suggestions:", error);
+          })
+          .finally(() => setLoadingSuggestions(false));
+      } else {
+        setSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [charterItineraryName, hotelId]);
+
+  const boatTypes = ["All", "Catamaran", "RIB", "Speedboat", "Yacht", "Monohull"];
 
   return (
-    <div className="space-y-4 p-6 shadow-md rounded-lg">
-      <h2 className="text-3xl font-bold text-center">New Booking</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Destination field using shadcn Command for autofill */}
+    <div className="rounded-lg shadow p-4 sm:p-6">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
+        Search Available Boats
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Charter Itinerary Name with AI Autofill */}
         <div className="flex flex-col">
-          <label className="mb-1 text-sm font-semibold">Destination</label>
-          <Command className="rounded-md border border-gray-200">
+          <label className="mb-1 text-sm font-medium">Charter Itinerary Name</label>
+          <Command>
             <CommandInput
-              placeholder="Enter destination (e.g. Mykonos, Santorini)"
-              value={destination}
-              onValueChange={(value) => setDestination(value)}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
-              className="border-0 outline-none focus:ring-0"
+              placeholder="Enter Charter Itinerary Name"
+              value={charterItineraryName}
+              onValueChange={(value) =>
+                setSearchParams({
+                  ...searchParams,
+                  charterItineraryName: value,
+                })
+              }
+              onFocus={() => setOpen(true)}
+              onBlur={() => setOpen(false)}
             />
-            {focused && (
-              <CommandList className="max-h-60 overflow-y-auto">
-                {filteredSuggestions.length > 0 ? (
-                  filteredSuggestions.map((suggestion) => (
+            {open && (
+              <CommandList>
+                {loadingSuggestions ? (
+                  <CommandEmpty>Loading suggestions...</CommandEmpty>
+                ) : suggestions.length === 0 ? (
+                  <CommandEmpty>No itineraries found</CommandEmpty>
+                ) : (
+                  suggestions.map((itinerary) => (
                     <CommandItem
-                      key={suggestion}
-                      // Use onMouseDown so that the click registers before blur.
-                      onMouseDown={() => setDestination(suggestion)}
+                      key={itinerary.id}
+                      onSelect={() =>
+                        setSearchParams({
+                          ...searchParams,
+                          charterItineraryName: itinerary.name,
+                        })
+                      }
                     >
-                      {suggestion}
+                      {itinerary.name}
                     </CommandItem>
                   ))
-                ) : (
-                  <CommandEmpty>No results found.</CommandEmpty>
                 )}
               </CommandList>
             )}
           </Command>
         </div>
-
-        {/* Passenger Count using shadcn Input */}
+        {/* Trip Type */}
         <div className="flex flex-col">
-          <label className="mb-1 text-sm font-semibold">
-            Number of Passengers
-          </label>
-          <Input
-            type="number"
-            placeholder="Enter number of passengers"
-            value={passengerCount > 0 ? passengerCount.toString() : ""}
-            onChange={(e) => setPassengerCount(Number(e.target.value))}
-          />
-        </div>
-
-        {/* Date Picker using shadcn DatePicker */}
-        <div className="flex flex-col">
-          <label className="mb-1 text-sm font-semibold">Choose Day</label>
-          <DatePicker value={date} onChange={setDate} />
-        </div>
-
-        {/* Trip Type using shadcn Select */}
-        <div className="flex flex-col">
-          <label className="mb-1 text-sm font-semibold">Trip Type</label>
-          <Select value={tripType} onValueChange={setTripType}>
+          <label className="mb-1 text-sm font-medium">Trip Type</label>
+          <Select
+            value={searchParams.tripType}
+            onValueChange={(value: string) =>
+              setSearchParams({ ...searchParams, tripType: value })
+            }
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Trip Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Full-day">Full-day</SelectItem>
-              <SelectItem value="Half-day">Half-day</SelectItem>
-              <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
-              <SelectItem value="Sunset Cruise">Sunset Cruise</SelectItem>
+              <SelectItem value="FullDay">Full Day</SelectItem>
+              <SelectItem value="HalfDay">Half Day</SelectItem>
+              <SelectItem value="VipTransfer">VIP Transfer</SelectItem>
+              <SelectItem value="SunsetCruise">Sunset Cruise</SelectItem>
             </SelectContent>
           </Select>
         </div>
+        {/* Boat Type Dropdown */}
+        <div className="flex flex-col">
+          <label className="mb-1 text-sm font-medium">Boat Type</label>
+          <Select
+            value={searchParams.boatType || ""}
+            onValueChange={(value: string) =>
+              setSearchParams({ ...searchParams, boatType: value || null })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Boat Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {boatTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Number of Passengers */}
+        <div className="flex flex-col">
+          <label className="mb-1 text-sm font-medium">Number of Passengers</label>
+          <Input
+            type="number"
+            className="w-full"
+            placeholder="Enter number of passengers"
+            value={
+              searchParams.numPassengers > 0
+                ? searchParams.numPassengers.toString()
+                : ""
+            }
+            onChange={(e) =>
+              setSearchParams({
+                ...searchParams,
+                numPassengers: Number(e.target.value),
+              })
+            }
+          />
+        </div>
+        {/* Date Picker */}
+        <div className="flex flex-col">
+          <label className="mb-1 text-sm font-medium">Select Date</label>
+          <div className="w-full">
+            <DatePicker
+              value={searchParams.date}
+              onChange={(date) =>
+                setSearchParams({ ...searchParams, date: date })
+              }
+            />
+          </div>
+        </div>
       </div>
-
-      <div className="flex justify-center mt-4">
-        <Button onClick={onSearch} disabled={!destination || passengerCount <= 0 || !date}>
+      <div className="mt-6 flex justify-center">
+        <Button onClick={onSearch} className="w-full sm:w-auto">
           Search Boats
         </Button>
       </div>

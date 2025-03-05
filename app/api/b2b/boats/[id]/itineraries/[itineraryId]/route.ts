@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function DELETE(req: Request, { params }: { params: { itineraryId: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string; itineraryId: string } }
+) {
   try {
     const { itineraryId } = params;
 
@@ -20,8 +23,8 @@ export async function DELETE(req: Request, { params }: { params: { itineraryId: 
     });
 
     return NextResponse.json({ message: "Itinerary deleted successfully" }, { status: 200 });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
+    console.error("Error deleting itinerary:", error);
     return NextResponse.json({ error: "Failed to delete itinerary" }, { status: 500 });
   }
 }

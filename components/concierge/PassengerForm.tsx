@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectTrigger,
+  SelectValue,
   SelectContent,
   SelectItem,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Form,
@@ -36,8 +36,6 @@ export interface ItineraryOption {
 }
 
 interface PassengerFormProps {
-  passengers: PassengerInfo[];
-  onPassengerChange: (index: number, field: keyof PassengerInfo, value: unknown) => void;
   onBack: () => void;
   onSubmit: (data: {
     passengers: PassengerInfo[];
@@ -51,6 +49,7 @@ interface PassengerFormProps {
   onItineraryChange: (option: ItineraryOption, checked: boolean) => void;
   hour: string;
   setHour: (value: string) => void;
+  passengerCount: number;  // New prop to set the number of passengers dynamically
 }
 
 type FormValues = {
@@ -61,8 +60,6 @@ type FormValues = {
 };
 
 const PassengerForm: React.FC<PassengerFormProps> = ({
-  passengers,
-  onPassengerChange,
   onBack,
   onSubmit,
   selectedBoatName,
@@ -71,12 +68,17 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
   onItineraryChange,
   hour,
   setHour,
+  passengerCount,
 }) => {
   const form = useForm<FormValues>({
     defaultValues: {
       hour,
       bookingType: "Definitive",
-      passengers: passengers,
+      passengers: Array(passengerCount).fill({
+        fullName: "",
+        idNumber: "",
+        birth: null,
+      }),  // Dynamically set the number of passengers
       itineraries: selectedItinerary,
     },
   });
@@ -88,6 +90,14 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
   const internalSubmit = form.handleSubmit((data) => {
     onSubmit(data);
   });
+
+  useEffect(() => {
+    form.setValue("passengers", Array(passengerCount).fill({
+      fullName: "",
+      idNumber: "",
+      birth: null,
+    }));
+  }, [passengerCount, form]);
 
   return (
     <Form {...form}>
@@ -170,7 +180,8 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
           </div>
         </div>
 
-        {passengers.map((_, index) => (
+        {/* Dynamically create passenger forms */}
+        {form.getValues("passengers").map((_, index) => (
           <div key={index} className="border p-4 rounded-md space-y-4">
             <FormField
               control={form.control}
@@ -182,10 +193,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
                     <Input
                       placeholder="Enter full name"
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        onPassengerChange(index, "fullName", e.target.value);
-                      }}
                       required
                     />
                   </FormControl>
@@ -204,10 +211,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
                     <Input
                       placeholder="Enter ID number"
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        onPassengerChange(index, "idNumber", e.target.value);
-                      }}
                       required
                     />
                   </FormControl>
@@ -227,7 +230,6 @@ const PassengerForm: React.FC<PassengerFormProps> = ({
                       date={field.value || null}
                       setDate={(selectedDate: Date | null) => {
                         field.onChange(selectedDate);
-                        onPassengerChange(index, "birth", selectedDate);
                       }}
                       startYear={1900}
                       endYear={new Date().getFullYear()}

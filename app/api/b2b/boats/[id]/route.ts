@@ -158,18 +158,37 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const { id: boatId } = params;
-
+  
   // Authenticate session
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "b2b") {
+  if (!session || !session.user || session.user.role !== "b2b") {
+    console.error("Unauthorized deletion attempt for boat:", boatId);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
+  
   try {
-    // Delete the boat by its ID
+    // Delete related bookings (if any exist)
+    console.log(`Deleting bookings for boat ${boatId}`);
+    await prisma.booking.deleteMany({ where: { boatId } });
+
+    // Delete related unavailability records
+    console.log(`Deleting unavailability for boat ${boatId}`);
+    await prisma.boatUnavailability.deleteMany({ where: { boatId } });
+
+    // Delete related charter itineraries
+    console.log(`Deleting charter itineraries for boat ${boatId}`);
+    await prisma.charterItinerary.deleteMany({ where: { boatId } });
+    
+    // If you have many-to-many relationships (like itineraries) that are not auto‐removed,
+    // you might need to disconnect those relations here as well.
+    
+    // Now, delete the boat record
+    console.log(`Deleting boat ${boatId}`);
     const deletedBoat = await prisma.boat.delete({
       where: { id: boatId },
     });
+    
+    console.log("Boat successfully deleted:", deletedBoat);
     return NextResponse.json(deletedBoat, { status: 200 });
   } catch (error) {
     console.error("Error deleting boat:", error);

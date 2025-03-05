@@ -10,7 +10,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react"; // Delete icon
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -34,10 +34,14 @@ export interface Boat {
 interface BoatsTableProps {
   boats: Boat[];
   title?: string;
-  onDelete: (boatId: string) => Promise<void>; // Callback function to delete the boat
+  onDelete?: (boatId: string) => Promise<void>; // Made optional
 }
 
-const BoatsTable: React.FC<BoatsTableProps> = ({ boats, title, onDelete }) => {
+const BoatsTable: React.FC<BoatsTableProps> = ({
+  boats,
+  title,
+  onDelete = async () => {} // Default no‑op function
+}) => {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deletingBoatId, setDeletingBoatId] = useState<string | null>(null);
@@ -48,20 +52,22 @@ const BoatsTable: React.FC<BoatsTableProps> = ({ boats, title, onDelete }) => {
   };
 
   const handleDeleteClick = (e: React.MouseEvent, boatId: string) => {
-    e.stopPropagation(); // Prevent row click navigation
-    setDeletingBoatId(boatId); // Set boat to be deleted
-    setIsDialogOpen(true); // Open confirmation dialog
+    e.stopPropagation();
+    console.log("Delete clicked for boat:", boatId);
+    setDeletingBoatId(boatId);
+    setIsDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
     if (!deletingBoatId) return;
+    console.log("Confirm delete for boat:", deletingBoatId);
     setIsDeleting(true);
     try {
       await onDelete(deletingBoatId); // Call parent's delete handler
       setIsDialogOpen(false);
       setDeletingBoatId(null);
     } catch (error) {
-      console.error("Error deleting boat:", error);
+      console.error("Error in handleConfirmDelete:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -131,7 +137,7 @@ const BoatsTable: React.FC<BoatsTableProps> = ({ boats, title, onDelete }) => {
                     onClick={(e) => handleDeleteClick(e, boat.id)}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? "..." : <Trash2 size={16} />}
+                    {isDeleting ? "Deleting..." : <Trash2 size={16} />}
                     {isDeleting ? "Deleting..." : "Delete"}
                   </Button>
                 </div>
@@ -163,7 +169,7 @@ const BoatsTable: React.FC<BoatsTableProps> = ({ boats, title, onDelete }) => {
               onClick={handleConfirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "..." : "Confirm"}
+              {isDeleting ? "Deleting..." : "Confirm"}
             </Button>
           </DialogFooter>
         </DialogContent>

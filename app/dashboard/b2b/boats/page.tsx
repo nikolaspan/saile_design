@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import BoatsTable from "@/components/b2b/boats/BoatsTable";
 import AddBoatDialog, { Boat } from "@/components/b2b/boats/AddBoatDialog";
+import { toast } from "sonner";
 
 const fetcher = async (url: string): Promise<Boat[]> => {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch boats");
     const data = await res.json();
-
     return data.boats.map((boat: Boat) => ({
       ...boat,
       capacity:
@@ -46,9 +46,24 @@ export default function BoatsPage() {
   const localBoatsByHotel = useMemo(() => groupBoatsByHotel(localBoats), [localBoats]);
   const foreignBoatsByHotel = useMemo(() => groupBoatsByHotel(foreignBoats), [foreignBoats]);
 
-  // Update local cache when a new boat is added.
-  const handleAddBoat = (newBoat: Boat) => {
-    mutate([...allBoats, newBoat], false);
+  // Define the delete function for boats
+  const handleDeleteBoat = async (boatId: string) => {
+    try {
+      const res = await fetch(`/api/b2b/boats/${boatId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete boat");
+      }
+      toast.success("Boat deleted successfully");
+      await mutate(); // Refresh the boat list
+    } catch (error) {
+      toast.error(
+        "Error deleting boat: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
+    }
   };
 
   return (
@@ -61,7 +76,7 @@ export default function BoatsPage() {
           <>
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold">Manage Boats</h1>
-              <AddBoatDialog onAdd={handleAddBoat} />
+              <AddBoatDialog onAdd={(newBoat: Boat) => mutate([...allBoats, newBoat], false)} />
             </div>
             {[
               { title: "Local Boats", data: localBoatsByHotel },
@@ -77,7 +92,8 @@ export default function BoatsPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <BoatsTable boats={boats} />
+                      {/* Pass the handleDeleteBoat function here */}
+                      <BoatsTable boats={boats} onDelete={handleDeleteBoat} />
                     </CardContent>
                   </Card>
                 ))}

@@ -10,14 +10,16 @@ import useSWR from "swr";
 import { useSession } from "next-auth/react";
 
 // Define the Boat type returned by your API.
+// Note: The API returns "id", so we use "id" instead of "boatId"
 interface Boat {
-  boatId: string;
+  id: string;
   name: string;
   length: number;
   boatType: string;
+  capacity: number;
 }
 
-// Simple fetcher function for SWR.
+// SWR fetcher function.
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch boats");
@@ -45,7 +47,6 @@ const BoatsPage = () => {
     boat.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Display a creative full-screen loading indicator.
   if (status === "loading" || !conciergeId || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
@@ -72,15 +73,19 @@ const BoatsPage = () => {
         />
 
         {error && (
-          <p className="text-red-500">Error loading boats. Please try again.</p>
+          <p className="text-red-500">
+            Error loading boats. Please try again.
+          </p>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredBoats.length > 0 ? (
             filteredBoats.map((boat, index) => (
-              <Card key={boat.boatId || index}>
+              <Card key={`${boat.id}-${index}`}>
                 <Link
-                  href={`/dashboard/concierge/boats/${boat.boatId}`}
+                  href={`/dashboard/concierge/boats/${boat.id}?data=${encodeURIComponent(
+                    JSON.stringify(boat)
+                  )}`}
                   className="block"
                 >
                   <CardHeader>
@@ -89,6 +94,7 @@ const BoatsPage = () => {
                   <div className="p-2">
                     <p className="text-sm">Length: {boat.length} m</p>
                     <p className="text-sm">Type: {boat.boatType}</p>
+                    <p className="text-sm">Capacity: {boat.capacity}</p>
                   </div>
                   <CardFooter className="justify-center">
                     <Button>Learn More</Button>

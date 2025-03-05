@@ -13,6 +13,7 @@ import AddPriceDialog from "@/components/boats/AddPriceDialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 export type Trip = {
   id: string;
@@ -137,6 +138,27 @@ export default function BoatPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Define the delete function for itineraries
+  const handleDeleteItinerary = async (itineraryId: string) => {
+    try {
+      const res = await fetch(
+        `/api/b2b/boats/${id}/itineraries/${itineraryId}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete itinerary");
+      }
+      toast.success("Itinerary deleted successfully");
+      await mutate(); // Revalidate data after deletion
+    } catch (error) {
+      toast.error(
+        "Error deleting itinerary: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
+    }
+  };
+
   return (
     <DashboardLayout role="B2B">
       <div className="p-6 space-y-8 mt-8">
@@ -181,13 +203,16 @@ export default function BoatPage() {
 
         <PriceListTable priceList={priceList} />
 
-        <ItineraryTable itineraries={itineraries} onDelete={async () => { await mutate(); }} />
+        {/* Pass handleDeleteItinerary to ItineraryTable */}
+        <ItineraryTable itineraries={itineraries} onDelete={handleDeleteItinerary} />
 
         <AddItineraryDialog
           open={isItineraryDialogOpen}
           setOpen={setItineraryDialogOpen}
           boatId={id as string}
-          onItineraryAdded={async () => { await mutate(); }}
+          onItineraryAdded={async () => {
+            await mutate();
+          }}
         />
 
         <AddPriceDialog

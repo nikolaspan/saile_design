@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
 
-const prisma = new PrismaClient();
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const conciergeId = searchParams.get("conciergeId");
-
-    if (!conciergeId) {
-      return NextResponse.json({ error: "Concierge ID is required" }, { status: 400 });
+    // Authenticate the user via NextAuth
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || session.user.role?.toLowerCase() !== "concierge" || !session.user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    
+    // Use the authenticated concierge's id
+    const conciergeId = session.user.id;
 
-    // Find the concierge and their assigned hotel
+    // Find the concierge and their assigned hotel.
     const concierge = await prisma.concierge.findUnique({
       where: { userId: conciergeId },
       include: { hotel: true },
@@ -22,7 +25,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Concierge or hotel not found" }, { status: 404 });
     }
 
-    // Fetch boats for the concierge's hotel
+    // Fetch boats for the concierge's hotel.
     const boats = await prisma.boat.findMany({
       where: { hotelId: concierge.hotelId },
       include: {
@@ -37,6 +40,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ boats }, { status: 200 });
   } catch (error) {
+    console.error("Error fetching boats:", error);
     return NextResponse.json(
       { error: "Internal Server Error", details: error instanceof Error ? error.message : error },
       { status: 500 }

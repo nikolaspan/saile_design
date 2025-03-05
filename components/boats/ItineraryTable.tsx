@@ -1,9 +1,18 @@
+"use client";
+
 import React, { useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export type Itinerary = {
   id: string;
@@ -13,7 +22,7 @@ export type Itinerary = {
 
 interface ItineraryTableProps {
   itineraries: Itinerary[];
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (itineraryId: string) => Promise<void>;
 }
 
 export default function ItineraryTable({ itineraries, onDelete }: ItineraryTableProps) {
@@ -32,8 +41,9 @@ export default function ItineraryTable({ itineraries, onDelete }: ItineraryTable
     setLoading(true);
     try {
       await onDelete(selectedItinerary.id);
-      toast.success("Itinerary deleted successfully!");
-    } catch {
+      // Removed duplicate toast here.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
       toast.error("Failed to delete itinerary.");
     } finally {
       setLoading(false);
@@ -72,12 +82,21 @@ export default function ItineraryTable({ itineraries, onDelete }: ItineraryTable
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Please confirm that you want to delete the itinerary.
+            </DialogDescription>
           </DialogHeader>
-          <p>Are you sure you want to delete &quot;{selectedItinerary?.name}&quot;?</p>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDelete}>{loading ? "Deleting..." : "Confirm Delete"}</Button>
-          </div>
+          <p>
+            Are you sure you want to delete &quot;{selectedItinerary?.name}&quot;?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              {loading ? "Deleting..." : "Confirm Delete"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
