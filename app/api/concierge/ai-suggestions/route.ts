@@ -12,8 +12,7 @@ export async function GET(request: Request) {
     );
   }
 
-  console.log("Hotel ID:", hotelId);  // Log hotelId
-  console.log("Query:", query);  // Log the query term
+
 
   try {
     // Fetch charter itineraries for boats connected to the specified hotel,

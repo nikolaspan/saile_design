@@ -23,7 +23,7 @@ export async function GET() {
       },
     });
 
-    console.log("API Response:", bookings); // Debugging log
+   
 
     return NextResponse.json(bookings ?? [], { status: 200 }); // Always return an array
   } catch (error: unknown) {
