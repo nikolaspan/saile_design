@@ -15,6 +15,7 @@ import { PlusCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
+// Define the missing types directly in this file
 export type Trip = {
   id: string;
   date: string;
@@ -59,19 +60,18 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const ITEMS_PER_PAGE = 5;
 
 export default function BoatPage() {
-  const { id } = useParams();
+  const { id } = useParams();  // Dynamically fetch the boat's ID from the URL
   const [isItineraryDialogOpen, setItineraryDialogOpen] = useState(false);
   const [isPriceDialogOpen, setPriceDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const { data: boatData, error, isLoading, mutate } = useSWR<BoatData>(
-    `/api/b2b/boats/${id}`,
+    id ? `/api/b2b/boats/${id}` : null,  // Fetch boat data using dynamic id
     fetcher,
     { revalidateOnFocus: false }
   );
 
-  console.log("📡 Boat Data from API:", boatData);
-
+  // Loading state when data is still being fetched
   if (isLoading) {
     return (
       <DashboardLayout role="B2B">
@@ -84,6 +84,7 @@ export default function BoatPage() {
     );
   }
 
+  // If an error occurs or no boat data is found
   if (error || !boatData) {
     return (
       <DashboardLayout role="B2B">
@@ -96,8 +97,6 @@ export default function BoatPage() {
 
   const { name, itineraries = [], bookings = [] } = boatData;
   const ezsailCommission = Number(boatData?.ezSailCommission) || NaN;
-
-  console.log("EzSail Commission Percentage from API:", ezsailCommission);
 
   const priceList: PriceItem[] =
     boatData.priceList && boatData.priceList.length > 0
@@ -138,23 +137,22 @@ export default function BoatPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Define the delete function for itineraries
   const handleDeleteItinerary = async (itineraryId: string) => {
     try {
-      const res = await fetch(
-        `/api/b2b/boats/${id}/itineraries/${itineraryId}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`/api/b2b/boats/${id}/itineraries/${itineraryId}`, {
+        method: "DELETE",
+      });
+
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to delete itinerary");
       }
+
       toast.success("Itinerary deleted successfully");
       await mutate(); // Revalidate data after deletion
     } catch (error) {
       toast.error(
-        "Error deleting itinerary: " +
-          (error instanceof Error ? error.message : "Unknown error")
+        "Error deleting itinerary: " + (error instanceof Error ? error.message : "Unknown error")
       );
     }
   };
@@ -203,7 +201,6 @@ export default function BoatPage() {
 
         <PriceListTable priceList={priceList} />
 
-        {/* Pass handleDeleteItinerary to ItineraryTable */}
         <ItineraryTable itineraries={itineraries} onDelete={handleDeleteItinerary} />
 
         <AddItineraryDialog

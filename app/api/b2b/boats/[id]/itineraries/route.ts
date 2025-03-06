@@ -1,24 +1,35 @@
-import { NextResponse, NextRequest } from "next/server";
+
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Extract the boatId from the URL path
-    const { pathname } = req.nextUrl;
-    const pathSegments = pathname.split("/");
-    const boatId = pathSegments[pathSegments.length - 2]; // The second-to-last segment should be the boatId
+    const { id, name, price } = await request.json();
 
-    const { name, price } = await req.json();
+    // Log incoming request data for debugging
+    console.log("Incoming data:", { id, name, price });
 
-    if (!boatId || !name || !price) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!id || !name || price === undefined) {
+      return NextResponse.json({ error: "Missing required fields: id, name, and price" }, { status: 400 });
+    }
+
+    const boat = await prisma.boat.findUnique({
+      where: { id },
+    });
+
+    if (!boat) {
+      return NextResponse.json({ error: `Boat with ID ${id} not found` }, { status: 404 });
     }
 
     const itinerary = await prisma.itinerary.create({
       data: {
         name,
         price,
-        boats: { connect: { id: boatId } },
+        boats: {
+          connect: {
+            id, 
+          },
+        },
       },
     });
 

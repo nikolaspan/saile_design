@@ -3,13 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, XCircle } from "lucide-react";
-import { toast } from "sonner"; // ✅ Import Sonner notifications
+import { toast } from "sonner"; 
 
 interface AddItineraryDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  boatId: string; // Ensures the itinerary is linked to the correct boat
-  onItineraryAdded: () => void; // Refresh function
+  boatId: string; 
+  onItineraryAdded: () => void; 
 }
 
 export default function AddItineraryDialog({ open, setOpen, boatId, onItineraryAdded }: AddItineraryDialogProps) {
@@ -17,32 +17,38 @@ export default function AddItineraryDialog({ open, setOpen, boatId, onItineraryA
   const [loading, setLoading] = useState(false);
 
   const handleAddItinerary = async () => {
-    if (!newItinerary.name || !newItinerary.price) {
-      toast.error("Please enter all fields.");
+    if (!newItinerary.name || !newItinerary.price || isNaN(parseFloat(newItinerary.price))) {
+      toast.error("Please enter valid values for both name and price.");
       return;
     }
-
+  
     setLoading(true);
     try {
+      // Convert price to float before sending it
       const response = await fetch(`/api/b2b/boats/${boatId}/itineraries`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newItinerary.name, price: parseFloat(newItinerary.price) }),
+        body: JSON.stringify({
+          id: boatId,
+          name: newItinerary.name,
+          price: parseFloat(newItinerary.price),  // Ensure it's a valid number
+        }),
       });
-
+  
       if (!response.ok) throw new Error("Failed to add itinerary");
-
+  
       setNewItinerary({ name: "", price: "" });
       setOpen(false);
-      onItineraryAdded(); // ✅ Refresh the table
+      onItineraryAdded();
       toast.success("Itinerary added successfully!");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to add itinerary. Please try again.");
+      console.error("Error adding itinerary:", error);  // Log the error for debugging
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

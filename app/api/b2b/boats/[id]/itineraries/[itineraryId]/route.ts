@@ -1,20 +1,17 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// This function will delete an itinerary based on the dynamic URL parameters [id] and [itineraryId]
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string; itineraryId: string }> }) {
   try {
-    // Extracting the URL path from the request
-    const { pathname } = req.nextUrl;
-    const pathSegments = pathname.split("/");
-
-    // The itineraryId is the last segment of the path
-    const itineraryId = pathSegments[pathSegments.length - 1];
+    // Resolve the promise to get the actual params
+    const resolvedParams = await params;
+    const { itineraryId } = resolvedParams;
 
     if (!itineraryId) {
       return NextResponse.json({ error: "Missing itinerary ID" }, { status: 400 });
     }
 
+    // Find the itinerary from the database
     const itinerary = await prisma.itinerary.findUnique({
       where: { id: itineraryId },
     });
@@ -23,6 +20,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Itinerary not found" }, { status: 404 });
     }
 
+    // Delete the itinerary
     await prisma.itinerary.delete({
       where: { id: itineraryId },
     });

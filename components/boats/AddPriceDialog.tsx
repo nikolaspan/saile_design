@@ -1,5 +1,4 @@
-"use client";
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
@@ -26,6 +25,9 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 
+// Assuming BookingType is already imported
+import { BookingType } from "@prisma/client";
+
 interface AddPriceDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -44,7 +46,7 @@ export default function AddPriceDialog({
   onPriceAdded,
 }: AddPriceDialogProps) {
   const [newPrice, setNewPrice] = useState({
-    charterType: "Half Day",
+    charterType: "HalfDay" as BookingType, // Explicitly cast to BookingType enum
     itineraryName: "",
     rentalPriceWithoutCommission: "",
     commission: "",
@@ -98,14 +100,18 @@ export default function AddPriceDialog({
     ezsailCommissionPercentage,
   ]);
 
+  // Function to send data to the backend
   async function createCharterItinerary(data: {
     boatId: string;
-    charterType: string;
+    charterType: BookingType; // Use BookingType enum here
     itineraryName: string;
     rentalPriceWithoutCommission: number;
     commission: number;
     fuelCost: number;
   }) {
+    // Log the payload to be sent
+    console.log("Payload being sent to the backend:", data);
+
     const response = await fetch(`/api/b2b/boats/${data.boatId}/charterItineraries`, {
       method: "POST",
       headers: {
@@ -119,10 +125,12 @@ export default function AddPriceDialog({
         fuelCost: data.fuelCost,
       }),
     });
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || "Failed to create charter itinerary");
     }
+
     return response.json();
   }
 
@@ -142,7 +150,7 @@ export default function AddPriceDialog({
     try {
       const result = await createCharterItinerary({
         boatId,
-        charterType: newPrice.charterType,
+        charterType: newPrice.charterType, // Ensure it's BookingType
         itineraryName: newPrice.itineraryName,
         rentalPriceWithoutCommission: Number(newPrice.rentalPriceWithoutCommission),
         commission: Number(newPrice.commission),
@@ -154,7 +162,7 @@ export default function AddPriceDialog({
       });
 
       setNewPrice({
-        charterType: "Half Day",
+        charterType: "HalfDay", // Default to HalfDay
         itineraryName: "",
         rentalPriceWithoutCommission: "",
         commission: "",
@@ -162,7 +170,6 @@ export default function AddPriceDialog({
       });
       setOpen(false);
       onPriceAdded?.();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error("Error saving price. Please try again.");
     }
@@ -183,16 +190,16 @@ export default function AddPriceDialog({
             <Label>Charter Type</Label>
             <Select
               value={newPrice.charterType}
-              onValueChange={(value) => setNewPrice({ ...newPrice, charterType: value })}
+              onValueChange={(value) => setNewPrice({ ...newPrice, charterType: value as BookingType })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Charter Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Half Day">Half Day</SelectItem>
-                <SelectItem value="Full Day">Full Day</SelectItem>
-                <SelectItem value="VIP Transfer">VIP Transfer</SelectItem>
-                <SelectItem value="Sunset Cruise">Sunset Cruise</SelectItem>
+                <SelectItem value="HalfDay">Half Day</SelectItem>
+                <SelectItem value="FullDay">Full Day</SelectItem>
+                <SelectItem value="VipTransfer">VIP Transfer</SelectItem>
+                <SelectItem value="SunsetCruise">Sunset Cruise</SelectItem>
               </SelectContent>
             </Select>
           </div>

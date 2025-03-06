@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { format, parseISO, isSameDay } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -35,15 +33,20 @@ export default function TripsCalendar({ trips }: TripsCalendarProps) {
 
   // Find trips on the selected date using isSameDay to compare dates
   const selectedTrips = trips.filter((trip) => {
+    if (!trip.date) {
+      console.error("Invalid trip date:", trip.date); // Log if date is undefined
+      return false; // Skip invalid dates
+    }
+  
     try {
       const tripDate = parseISO(trip.date);
       return selectedDate ? isSameDay(tripDate, selectedDate) : false;
     } catch (error) {
-      console.error("Error parsing trip date:", trip.date);
+      console.error("Error in date matching:", trip.date); // Handle invalid date format
       return false;
     }
   });
-
+  
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6">
       {/* Calendar Section */}
@@ -116,7 +119,6 @@ export default function TripsCalendar({ trips }: TripsCalendarProps) {
                     >
                       Learn More
                     </Button>
-
                   </li>
                 ))}
               </ul>
