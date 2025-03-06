@@ -64,11 +64,7 @@ export default function Layout({ children, role }: LayoutProps) {
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center text-red-500"
-                    onClick={() =>
-                      signOut({
-                        callbackUrl: `${window.location.origin}/` // Using absolute URL
-                      })
-                    }
+                    onClick={() => signOut({ callbackUrl: "/" })}  // Hardcoded relative URL
                   >
                     <LogOut className="w-4 h-4 mr-2" /> Logout
                   </DropdownMenuItem>
