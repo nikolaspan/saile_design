@@ -159,9 +159,10 @@ export default function TripsTable() {
   ]);
 
   const handleBookingClick = (booking: Booking) => {
-    const encodedData = encodeURIComponent(JSON.stringify(booking));
-    router.push(`/dashboard/b2b/bookings/${booking.id}?data=${encodedData}`);
+    const encodedData = encodeURIComponent(JSON.stringify(booking)); // Serialize and encode the booking data
+    router.push(`/dashboard/b2b/bookings/${booking.id}?data=${encodedData}`); // Pass the encoded data via query params
   };
+  
 
   if (error) return <div>Error loading trips.</div>;
   if (!bookings) return <div>Loading trips...</div>;

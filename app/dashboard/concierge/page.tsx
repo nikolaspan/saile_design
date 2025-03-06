@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -12,11 +11,11 @@ import TripsTable from "@/components/concierge/TripsTable";
 export type Booking = {
   id: string;
   boatName: string;
-  bookingDate: string;
+  bookingDateTime: string;
   type: string;
   status: string;
   roomNumber?: string | null;
-  charterItinerary?: { id: string; name: string } | null;
+  charterItinerary?: { id: string; name: string; type: string } | null;
   itineraries?: { id: string; name: string; price: number }[];
   passengersCount: number;
 };
@@ -44,7 +43,7 @@ export default function ConciergeBookingsPage() {
     }
   }, [session, status, router]);
 
-  // Use SWR to fetch bookings for the current concierge.
+  // Fetch bookings for the current concierge using SWR
   const { data, error, isValidating } = useSWR(
     conciergeId ? `/api/concierge/bookings` : null,
     fetcher,
@@ -66,10 +65,8 @@ export default function ConciergeBookingsPage() {
         {error && <p className="text-red-500">Failed to load bookings. Please try again.</p>}
 
         {/* Render Calendar and TripsTable components with fetched bookings */}
-        <Calendar bookings={bookings} loading={isLoading} error={error ? "Failed to load bookings." : null} />
-        <TripsTable bookings={bookings} loading={isLoading} error={error ? "Failed to load bookings." : null} />
-
-        <div className="mt-36" />
+        <Calendar bookings={bookings} loading={isLoading} error={null} />
+        <TripsTable bookings={bookings} loading={isLoading} />
       </div>
     </DashboardLayout>
   );

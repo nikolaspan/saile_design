@@ -1,17 +1,35 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../../layouts/DashboardLayout";
 import BookingsTable from "@/components/concierge/BookingsTable";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
+import { format } from "date-fns";
 
-// Define Passenger and Trip Types
 interface Passenger {
   passengerId: string;
   name: string;
   birthday: string;
+}
+
+interface CharterItinerary {
+  id: string;
+  name: string;
+  type: string;
+  finalPrice: number;
+}
+
+interface Booking {
+  id: string;
+  boatName: string;
+  bookingDateTime: string;
+  status: string;
+  roomNumber?: string | null;
+  charterItinerary: CharterItinerary | null;
+  boat: {
+    name: string;
+  };
 }
 
 interface Trip {
@@ -20,29 +38,11 @@ interface Trip {
   itineraryName: string;
   revenue: number;
   date: string;
-  boatName: string; // ✅ Ensure boatName is included
+  boatName: string;
   roomId: string;
   boatId: number;
   passengers: Passenger[];
-}
-
-interface Booking {
-  id: string;
-  boatName: string; // ✅ Ensure boatName exists in Booking
-  bookingDate: string;
-  type: string;
-  status: string;
-  roomNumber?: string | null;
-  charterItinerary?: {
-    id: string;
-    name: string;
-    finalPrice: number;
-  } | null;
-  itineraries?: {
-    id: string;
-    name: string;
-    price: number;
-  }[];
+  status: string; // Ensure the status property is included
 }
 
 const role = "Concierge";
@@ -75,33 +75,34 @@ export default function BookingsPage() {
     fetchBookings();
   }, [conciergeId]);
 
-  const currentDate = new Date().toISOString().split("T")[0];
-
-  // ✅ Convert `Booking[]` to `Trip[]`
-  const transformedTrips: Trip[] = bookings.map((booking) => ({
+  // Ensure bookings is defined and has data before transforming
+  const transformedTrips: Trip[] = bookings && bookings.length > 0 ? bookings.map((booking) => ({
     tripId: booking.id,
-    charterType: booking.type,
+    charterType: booking.charterItinerary?.type || "N/A",
     itineraryName: booking.charterItinerary?.name || "N/A",
     revenue: booking.charterItinerary?.finalPrice || 0,
-    date: booking.bookingDate,
-    boatName: booking.boatName || "Unknown Boat", // ✅ Ensure boatName is included
+    date: format(new Date(booking.bookingDateTime), "yyyy-MM-dd"),
+    boatName: booking.boat.name || "Unknown Boat",
     boatId: parseInt(booking.roomNumber || "0", 10),
     roomId: booking.roomNumber || "N/A",
     passengers: [],
-  }));
+    status: booking.status, // Add the status from the booking
+  })) : [];
 
-  // Categorizing trips based on Prisma schema status
+  const currentDate = new Date().toISOString().split("T")[0];
+
+  // Filter trips by status
   const definitiveAndCompletedTrips = transformedTrips.filter(
-    (trip) => bookings.find((b) => b.id === trip.tripId)?.status === "Definitive" || trip.date < currentDate
+    (trip) => trip.status === "Definitive" || trip.date < currentDate
   );
   const tentativeTrips = transformedTrips.filter(
-    (trip) => bookings.find((b) => b.id === trip.tripId)?.status === "Tentative"
+    (trip) => trip.status === "Tentative"
   );
   const requestedTrips = transformedTrips.filter(
-    (trip) => bookings.find((b) => b.id === trip.tripId)?.status === "Requested"
+    (trip) => trip.status === "Requested"
   );
   const canceledTrips = transformedTrips.filter(
-    (trip) => bookings.find((b) => b.id === trip.tripId)?.status === "Cancelled"
+    (trip) => trip.status === "Cancelled"
   );
 
   return (
@@ -110,7 +111,6 @@ export default function BookingsPage() {
         <h1 className="text-3xl font-bold text-center md:text-left">📅 Bookings</h1>
 
         {loading ? (
-          // 🔥 Creative Loading Animation
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6">
             <Loader2 className="animate-spin h-12 w-12 text-blue-500" />
             <p className="text-lg text-gray-600">Fetching bookings...</p>
@@ -127,25 +127,21 @@ export default function BookingsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* ✅ Definitive & Completed Trips */}
             <div className="shadow-md rounded-xl p-4">
               <h2 className="text-xl font-semibold mb-3">✅ Definitive & Completed</h2>
               <BookingsTable title="Definitive & Completed" trips={definitiveAndCompletedTrips} />
             </div>
 
-            {/* 🕒 Tentative Trips */}
             <div className="shadow-md rounded-xl p-4">
               <h2 className="text-xl font-semibold mb-3">🕒 Tentative</h2>
               <BookingsTable title="Tentative Trips" trips={tentativeTrips} />
             </div>
 
-            {/* 🚀 Requested Trips */}
             <div className="shadow-md rounded-xl p-4">
               <h2 className="text-xl font-semibold mb-3">🚀 Requested</h2>
               <BookingsTable title="Requested Trips" trips={requestedTrips} />
             </div>
 
-            {/* ❌ Canceled Trips */}
             <div className="shadow-md rounded-xl p-4">
               <h2 className="text-xl font-semibold mb-3">❌ Canceled</h2>
               <BookingsTable title="Canceled Trips" trips={canceledTrips} />

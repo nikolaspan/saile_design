@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -20,6 +18,11 @@ interface Passenger {
   birthday: string;
 }
 
+interface CharterItinerary {
+  type: string;
+  name: string;
+}
+
 interface Trip {
   tripId: string;
   charterType: string;
@@ -30,6 +33,8 @@ interface Trip {
   roomId: string;
   boatId: number;
   passengers: Passenger[];
+  status: string; // Add status directly here
+  charterItinerary?: CharterItinerary;
 }
 
 interface BookingsTableProps {
@@ -41,16 +46,28 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
   const router = useRouter();
 
   const getTripStatus = (trip: Trip, tableTitle: string) => {
-    if (tableTitle === "Canceled Trips")
+    // Ensure the status is correctly mapped
+    if (tableTitle === "Canceled Trips") {
       return { status: "Canceled", color: "red" };
-    if (tableTitle === "Requested Trips")
+    }
+    if (tableTitle === "Requested Trips") {
       return { status: "Requested", color: "yellow" };
+    }
+
+    // Check if it's a Tentative booking by checking the trip's status
+    const tripStatus = trip.status; // Directly use the status from the trip
+
+    // If the status is Tentative, show Tentative, otherwise check other statuses
+    if (tripStatus === "Tentative") {
+      return { status: "Tentative", color: "orange" };
+    }
 
     const tripDate = new Date(trip.date);
     const today = new Date();
+
     return tripDate < today
       ? { status: "Completed", color: "green" }
-      : { status: "Definitive", color: "blue" }; // ✅ Replaced "Pending" with "Definitive"
+      : { status: "Definitive", color: "blue" };
   };
 
   return (
@@ -77,8 +94,8 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                     const { status, color } = getTripStatus(trip, title);
                     return (
                       <TableRow
-                        key={trip.tripId}
-                        className="cursor-pointer hover:bg-gray-100"
+                        key={`${trip.tripId}-${trip.roomId}`} // Ensure unique key using a combination of tripId and roomId
+                        className="cursor-pointer "
                         onClick={() =>
                           router.push(
                             `/dashboard/concierge/bookings/${trip.tripId}?data=${encodeURIComponent(
@@ -88,15 +105,15 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ title, trips }) => {
                         }
                       >
                         <TableCell>{trip.boatName || "Unknown Boat"}</TableCell>
-                        <TableCell>{trip.charterType}</TableCell>
-                        <TableCell>{trip.itineraryName}</TableCell>
                         <TableCell>
-                          {format(parseISO(trip.date), "yyyy-MM-dd")}
+                          {trip.charterItinerary?.type || trip.charterType || "N/A"}
+                        </TableCell>
+                        <TableCell>{trip.itineraryName || "N/A"}</TableCell>
+                        <TableCell>
+                          {trip.date ? format(parseISO(trip.date), "yyyy-MM-dd") : "Invalid date"}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}
-                          >
+                          <Badge className={`bg-${color}-500 text-white px-3 py-1 rounded-full`}>
                             {status}
                           </Badge>
                         </TableCell>

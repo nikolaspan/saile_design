@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardLayout from "../../../../layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,14 @@ interface Passenger {
 interface BookingData {
   id: string;
   bookingDateTime: string;
-  type: string; // using "type" from your schema (BookingType)
-  charterItinerary: { name: string };
-  boat: { 
+
+  charterItinerary: {
+    name: string
+    type: string
+  };
+  boat: {
     name: string;
-    hotel?: { name: string }; // use optional chaining in case hotel is missing
+    hotel?: { name: string };
   };
   status: string;
   passengers: Passenger[];
@@ -36,7 +38,7 @@ export default function BookingDetailsPage() {
   let booking: BookingData | null = null;
   try {
     if (dataParam) {
-      booking = JSON.parse(decodeURIComponent(dataParam)) as BookingData;
+      booking = JSON.parse(decodeURIComponent(dataParam)) as BookingData; // Decode the passed data
     }
   } catch (error) {
     console.error("Failed to parse booking data", error);
@@ -59,8 +61,8 @@ export default function BookingDetailsPage() {
   const computedStatus = isToday(bookingDate)
     ? "Ongoing"
     : bookingDate.getTime() < new Date().getTime()
-    ? "Completed"
-    : booking.status;
+      ? "Completed"
+      : booking.status;
 
   return (
     <DashboardLayout role="B2B">
@@ -79,7 +81,7 @@ export default function BookingDetailsPage() {
             <strong>Booking Date:</strong> {format(bookingDate, "yyyy-MM-dd HH:mm")}
           </p>
           <p>
-            <strong>Charter Type:</strong> {booking.type}
+            <strong>Charter Type:</strong> {booking.charterItinerary.type || "N/A"} {/* Using charterItinerary.type */}
           </p>
           <p>
             <strong>Charter Itinerary:</strong> {booking.charterItinerary.name}
