@@ -109,8 +109,7 @@ export default function AddPriceDialog({
     commission: number;
     fuelCost: number;
   }) {
-    // Log the payload to be sent
-    console.log("Payload being sent to the backend:", data);
+ 
 
     const response = await fetch(`/api/b2b/boats/${data.boatId}/charterItineraries`, {
       method: "POST",

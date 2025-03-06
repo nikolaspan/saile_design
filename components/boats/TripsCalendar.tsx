@@ -28,7 +28,7 @@ export default function TripsCalendar({ trips }: TripsCalendarProps) {
 
   // Debug: Log trips received
   useEffect(() => {
-    console.log("Trips received in Calendar:", trips);
+   
   }, [trips]);
 
   // Find trips on the selected date using isSameDay to compare dates
