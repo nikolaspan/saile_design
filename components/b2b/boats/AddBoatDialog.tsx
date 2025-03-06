@@ -20,9 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-// This is the shape used for the form state.
+// Define the boat form type.
 type NewBoatForm = {
   name: string;
   boatType: string;
@@ -32,8 +31,6 @@ type NewBoatForm = {
   origin: "Local" | "Foreign";
 };
 
-// Unified Boat type used by all components.
-// Note: id is a string and we convert origin into isForeign.
 export type Boat = {
   id: string;
   name: string;
@@ -52,7 +49,6 @@ type Hotel = {
 type AddBoatDialogProps = {
   onAdd: (boat: Boat) => void;
 };
-
 export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
   const [open, setOpen] = useState(false);
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -63,14 +59,12 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
     length: 0,
     capacity: 0,
     hotelId: "",
-    origin: "Local",
+    origin: "Local", // Default to "Local"
   });
 
-  // Fetch connected hotels from the API.
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        // Adjust URL if your endpoint for connected hotels is different.
         const response = await fetch("/api/b2b/hotels");
         const data: { hotels: Hotel[] } = await response.json();
         if (Array.isArray(data.hotels)) {
@@ -84,14 +78,13 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
     fetchHotels();
   }, []);
 
-  // Auto-select the hotel if only one is available.
   useEffect(() => {
     if (hotels.length === 1 && !newBoat.hotelId) {
       setNewBoat((prev) => ({ ...prev, hotelId: String(hotels[0].id) }));
     }
   }, [hotels, newBoat.hotelId]);
 
-  // Submit new boat to API.
+  // Handle adding a new boat
   const handleAddBoat = async () => {
     if (
       !newBoat.name ||
@@ -100,52 +93,55 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
       !newBoat.hotelId
     )
       return;
-
-    // Construct payload to match API expectations.
+  
+    // Set isForeign based on origin (ensure it's true when 'Foreign' is selected)
+    const isForeign = newBoat.origin === "Foreign";
+  
     const payload = {
-      hotelId: newBoat.hotelId, // Do not convert to number
+      hotelId: newBoat.hotelId,
       name: newBoat.name,
       boatType: newBoat.boatType,
       capacity: newBoat.capacity,
       length: newBoat.length,
-      isForeign: newBoat.origin === "Foreign",
+      isForeign: isForeign, // Correctly pass the isForeign value
+      origin: newBoat.origin, // Make sure origin is included
     };
-
+  
     try {
       const response = await fetch("/api/b2b/boats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
+  
       if (!response.ok) {
-        // Log response details for debugging.
         const errorText = await response.text();
         console.error("Failed to add boat:", response.status, errorText);
         throw new Error("Failed to add boat");
       }
-
-      // Convert the returned id to string if needed.
+  
       const createdBoatRaw = await response.json();
       const createdBoat: Boat = {
         ...createdBoatRaw,
         id: String(createdBoatRaw.id),
       };
       onAdd(createdBoat);
+  
+      // Reset form after successful submission
       setNewBoat({
         name: "",
         boatType: "Catamaran",
         length: 0,
         capacity: 0,
         hotelId: "",
-        origin: "Local",
+        origin: "Local", // Reset origin to "Local" after submission
       });
       setOpen(false);
     } catch (error) {
       console.error("Error adding boat:", error);
     }
   };
-
+  
   return (
     <div className="relative">
       <Dialog open={open} onOpenChange={setOpen} modal={true}>
@@ -189,7 +185,7 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select Boat Type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="w-full mt-1">
                   {["Catamaran", "Yacht", "Monohull", "RIB", "Speedboat"].map(
                     (type) => (
                       <SelectItem key={type} value={type}>
@@ -248,7 +244,7 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select Hotel" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="w-full mt-1">
                   {hotels.map((hotel) => (
                     <SelectItem key={hotel.id} value={String(hotel.id)}>
                       {hotel.name}
@@ -259,22 +255,22 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
             </div>
             <div>
               <Label className="block text-sm font-medium">Origin *</Label>
-              <RadioGroup
-                value={newBoat.origin}
-                onValueChange={(value) =>
-                  setNewBoat({ ...newBoat, origin: value as "Local" | "Foreign" })
-                }
-                className="flex gap-4 mt-1"
-              >
-                <div className="flex items-center gap-1">
-                  <RadioGroupItem value="Local" id="local" />
-                  <Label htmlFor="local">Local</Label>
-                </div>
-                <div className="flex items-center gap-1">
-                  <RadioGroupItem value="Foreign" id="foreign" />
-                  <Label htmlFor="foreign">Foreign</Label>
-                </div>
-              </RadioGroup>
+              <div className="w-full mt-1">
+                <Select
+                  value={newBoat.origin}
+                  onValueChange={(value) =>
+                    setNewBoat({ ...newBoat, origin: value as "Local" | "Foreign" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Origin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Local">Local</SelectItem>
+                    <SelectItem value="Foreign">Foreign</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex justify-end">
               <Button onClick={handleAddBoat} variant="default">
@@ -283,9 +279,6 @@ export default function AddBoatDialog({ onAdd }: AddBoatDialogProps) {
             </div>
           </div>
           <DialogClose asChild>
-            <Button variant="ghost" className="absolute top-2 right-2">
-              ×
-            </Button>
           </DialogClose>
         </DialogContent>
       </Dialog>

@@ -49,14 +49,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { hotelId, name, boatType, capacity, length } = await request.json();
+    const { hotelId, name, boatType, capacity, length, origin } = await request.json();
 
-    // Validate the boatType against the Prisma enum
     if (!Object.values(BoatType).includes(boatType)) {
       return NextResponse.json({ error: "Invalid boat type" }, { status: 400 });
     }
 
-    // Create new boat entry and include the hotel in the returned object.
+    // Correctly set isForeign based on origin
+    const isForeign = origin === "Foreign";  // Ensure it's true when "Foreign" is selected
+
     const newBoat = await prisma.boat.create({
       data: {
         b2bId: session.user.id,
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
         boatType,
         capacity,
         length,
+        isForeign, // Set the isForeign flag
       },
       include: { hotel: true },
     });
