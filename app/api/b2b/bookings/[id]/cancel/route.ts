@@ -1,27 +1,25 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Adjust the import path as needed
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Extract the bookingId from the URL path
-    const { pathname } = new URL(request.url);
-    const pathSegments = pathname.split("/");
-    const bookingId = pathSegments[pathSegments.length - 2]; // The second-to-last segment should be the bookingId
+    const { id } = await params;
+    console.log('Booking ID extracted from path:', id);
 
     // Update the booking status to "Cancelled"
     const updatedBooking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: "Cancelled" },
+      where: { id },
+      data: { status: 'Cancelled' },
     });
 
     return NextResponse.json(
-      { message: "Booking cancelled successfully", booking: updatedBooking },
+      { message: 'Booking cancelled successfully', booking: updatedBooking },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error cancelling booking:", error);
+    console.error('Error cancelling booking:', error);
     return NextResponse.json(
-      { error: "Failed to cancel booking" },
+      { error: 'Failed to cancel booking' },
       { status: 500 }
     );
   }

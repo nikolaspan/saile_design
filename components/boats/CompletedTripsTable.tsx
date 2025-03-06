@@ -107,14 +107,18 @@ export default function CompletedTripsTable({ trips, onBookingCancelled }: Compl
   const handleCancelBooking = async (tripId: string) => {
     try {
       setIsCancelling(true);
+      console.log("Cancelling booking with ID:", tripId); // Debug: Log the trip ID being cancelled
       const res = await fetch(`/api/b2b/bookings/${tripId}/cancel`, {
         method: "POST",
       });
+  
       if (!res.ok) {
         throw new Error("Failed to cancel booking");
       }
+  
       const data = await res.json();
       console.log(`Booking ${tripId} cancelled successfully:`, data);
+  
       // Call the refresh callback if provided.
       if (onBookingCancelled) {
         await onBookingCancelled();
@@ -125,6 +129,7 @@ export default function CompletedTripsTable({ trips, onBookingCancelled }: Compl
       setIsCancelling(false);
     }
   };
+  
 
   const resetFilters = () => {
     setStatusFilter("All");
