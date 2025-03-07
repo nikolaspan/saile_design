@@ -4,7 +4,7 @@ import DashboardLayout from "../../../../layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { parseISO, format, isToday } from "date-fns";
-import React, { useEffect } from "react";
+import React from "react";
 
 interface Passenger {
   id: string;
@@ -69,6 +69,7 @@ export default function BookingDetailsPage() {
   try {
     bookingDate = parseISO(booking.bookingDateTime);
     console.log("Parsed booking date:", bookingDate); // Debugging log to check the parsed date
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     console.error("Invalid bookingDateTime:", booking.bookingDateTime);
     bookingDate = new Date(); // fallback to current date

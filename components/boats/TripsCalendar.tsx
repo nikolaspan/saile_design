@@ -81,6 +81,7 @@ export default function TripsCalendar({ trips }: TripsCalendarProps) {
                   try {
                     const tripDate = parseISO(trip.date);
                     return isSameDay(tripDate, date);
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   } catch (error) {
                     console.error("Error in date matching:", trip.date);
                     return false;
