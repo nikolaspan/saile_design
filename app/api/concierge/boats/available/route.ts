@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
     const boatsData = await prisma.boat.findMany({
       where: {
-        hotelId: conciergeId, // Ensure boats are filtered by hotelId
+        hotelId: conciergeId,
         capacity: { gte: passengerCount },
         bookings: {
           none: {
@@ -57,6 +57,15 @@ export async function GET(request: Request) {
           },
         },
         boatType: boatType ? { equals: boatType } : undefined,
+      },
+      include: {
+        charterItineraries: {
+          select: {
+            id: true,          // Add id for each charter itinerary
+            name: true,
+            finalPrice: true,
+          },
+        },
       },
     });
 

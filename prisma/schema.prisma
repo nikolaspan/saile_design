@@ -182,7 +182,7 @@ model Passenger {
   booking     Booking  @relation(fields: [bookingId], references: [id])
   bookingId   String
   fullName    String
-  dateOfBirth DateTime
+  dateOfBirth DateTime?
   idNumber    String
   nationality String
 }

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       take: 10, // limit suggestions
     });
 
-    console.log("Itineraries Found:", itineraries);  // Log found itineraries
+ 
 
     return NextResponse.json({ itineraries });
   } catch (error) {

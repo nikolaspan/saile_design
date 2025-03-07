@@ -8,6 +8,13 @@ import BookingSearchForm from "@/components/concierge/BookingSearchForm";
 import BoatSelection from "@/components/concierge/BoatSelection";
 import PassengerForm from "@/components/concierge/PassengerForm";
 
+// Define ItineraryOption if not already defined
+interface ItineraryOption {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface SearchParams {
   charterItineraryName: string;
   tripType: string;
@@ -22,11 +29,11 @@ interface Boat {
   capacity: number;
   boatType: string;
   hasTentative: boolean;
-}
-
-interface ItineraryOption {
-  name: string;
-  price: number;
+  b2bId: string;  // The boat owner's b2bId
+  charterItineraries: {
+    id: string;
+    finalPrice: number | null;
+  }[];
 }
 
 interface BookingFormData {
@@ -34,10 +41,16 @@ interface BookingFormData {
     fullName: string;
     idNumber: string;
     birth: Date | null;
+    nationality: string;
   }[];
   itineraries: ItineraryOption[];
   hour: string;
   bookingType: "Definitive" | "Tentative";
+  roomNumber: string;
+  boatId: string;
+  charterItineraryId: string;
+  conciergeId: string;
+  b2bId: string;
 }
 
 export default function NewBookingPage() {
@@ -54,7 +67,6 @@ export default function NewBookingPage() {
   const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
   const [conciergeId, setConciergeId] = useState<string | null>(null);
 
-  // Fetch conciergeId from the server on component mount
   useEffect(() => {
     const fetchConciergeId = async () => {
       const response = await fetch("/api/concierge/me");
@@ -120,10 +132,70 @@ export default function NewBookingPage() {
     setStep(3);
   };
 
-  const handleSubmitBooking = (data: BookingFormData) => {
-    console.log("Submitted booking data:", data);
-    // Proceed with API call or further processing
+  const handleSubmitBooking = async (data: BookingFormData) => {
+  // Ensure all necessary fields are included in the request body
+  const bookingData = {
+    passengers: data.passengers.map((passenger) => ({
+      fullName: passenger.fullName,
+      idNumber: passenger.idNumber,
+      birth: passenger.birth,
+      nationality: passenger.nationality,  // Make sure nationality is included
+    })),
+    itineraries: data.itineraries,
+    hour: data.hour,
+    bookingType: data.bookingType,
+    roomNumber: data.roomNumber,
+    boatId: selectedBoat?.id,
+    charterItineraryId: selectedBoat?.charterItineraries[0]?.id,  // Ensure charterItineraryId is selected
+    conciergeId: conciergeId || "",  // Ensure the conciergeId is handled
+    b2bId: selectedBoat?.b2bId || "",  // Ensure the b2bId is handled
   };
+
+  // Log the data to ensure it's correct
+  console.log("Booking Data:", bookingData);
+  
+  // Check if charterItineraryId is present
+  if (!bookingData.charterItineraryId) {
+    toast({
+      title: "Error",
+      description: "Charter Itinerary is required.",
+    });
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/concierge/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      toast({
+        title: "Success",
+        description: "Booking created successfully.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to create booking",
+      });
+    }
+  } catch (error) {
+    console.error("Error submitting booking:", error);
+    toast({
+      title: "Error",
+      description: "An error occurred while submitting the booking.",
+    });
+  }
+};
+
+  
+  
 
   return (
     <DashboardLayout role="Concierge">
@@ -158,6 +230,10 @@ export default function NewBookingPage() {
               hour=""
               setHour={() => {}}
               passengerCount={searchParams.numPassengers} // Passing the number of passengers
+              boatId={selectedBoat.id}  // Added boatId here
+              charterItineraryId={selectedBoat.charterItineraries[0]?.id}  // Added charterItineraryId here
+              conciergeId={conciergeId || ""}  // Added conciergeId here
+              b2bId={selectedBoat.b2bId || ""}  // Added b2bId here
             />
           )}
         </div>
