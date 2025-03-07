@@ -64,10 +64,13 @@ export default function Layout({ children, role }: LayoutProps) {
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center text-red-500"
-                    onClick={() => signOut({ callbackUrl: "/" })}  // Hardcoded relative URL
+                    onClick={() =>
+                      signOut({ callbackUrl: process.env.NEXTAUTH_URL || "/" }) // Use the environment variable
+                    }
                   >
                     <LogOut className="w-4 h-4 mr-2" /> Logout
                   </DropdownMenuItem>
+
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
