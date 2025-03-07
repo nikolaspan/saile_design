@@ -4,7 +4,7 @@ import DashboardLayout from "../../../../layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { parseISO, format, isToday } from "date-fns";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface Passenger {
   id: string;
@@ -17,10 +17,9 @@ interface Passenger {
 interface BookingData {
   id: string;
   bookingDateTime: string;
-
   charterItinerary: {
-    name: string
-    type: string
+    name: string;
+    type: string;
   };
   boat: {
     name: string;
@@ -35,16 +34,24 @@ export default function BookingDetailsPage() {
   const searchParams = useSearchParams();
   const dataParam = searchParams.get("data");
 
+  // Debugging log to check the dataParam
+  console.log("Data parameter received:", dataParam);
+
   let booking: BookingData | null = null;
+
+  // Try to decode the data
   try {
     if (dataParam) {
-      booking = JSON.parse(decodeURIComponent(dataParam)) as BookingData; // Decode the passed data
+      booking = JSON.parse(decodeURIComponent(dataParam)) as BookingData;
+      console.log("Decoded booking data:", booking); // Debugging log to check the decoded booking data
     }
   } catch (error) {
-    console.error("Failed to parse booking data", error);
+    console.error("Failed to parse booking data:", error);
   }
 
-  if (!booking) {
+  // Check if booking data exists and has valid bookingDateTime
+  if (!booking || !booking.bookingDateTime) {
+    console.log("Booking data is not valid or missing bookingDateTime.");
     return (
       <DashboardLayout role="B2B">
         <div className="p-6">
@@ -57,12 +64,21 @@ export default function BookingDetailsPage() {
     );
   }
 
-  const bookingDate = parseISO(booking.bookingDateTime);
+  // Validate and parse the bookingDateTime safely
+  let bookingDate;
+  try {
+    bookingDate = parseISO(booking.bookingDateTime);
+    console.log("Parsed booking date:", bookingDate); // Debugging log to check the parsed date
+  } catch (error) {
+    console.error("Invalid bookingDateTime:", booking.bookingDateTime);
+    bookingDate = new Date(); // fallback to current date
+  }
+
   const computedStatus = isToday(bookingDate)
     ? "Ongoing"
     : bookingDate.getTime() < new Date().getTime()
-      ? "Completed"
-      : booking.status;
+    ? "Completed"
+    : booking.status;
 
   return (
     <DashboardLayout role="B2B">
@@ -81,7 +97,7 @@ export default function BookingDetailsPage() {
             <strong>Booking Date:</strong> {format(bookingDate, "yyyy-MM-dd HH:mm")}
           </p>
           <p>
-            <strong>Charter Type:</strong> {booking.charterItinerary.type || "N/A"} {/* Using charterItinerary.type */}
+            <strong>Charter Type:</strong> {booking.charterItinerary.type || "N/A"}
           </p>
           <p>
             <strong>Charter Itinerary:</strong> {booking.charterItinerary.name}

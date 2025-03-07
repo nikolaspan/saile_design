@@ -140,7 +140,9 @@ export default function CompletedTripsTable({ trips, onBookingCancelled }: Compl
   };
 
   return (
+    
     <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-4">Trips</h2>
       {/* Filter Row */}
       <div className="flex flex-wrap items-center gap-4">
         <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value)}>

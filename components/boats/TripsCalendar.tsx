@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { format, parseISO, isSameDay } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -24,29 +23,46 @@ export interface TripsCalendarProps {
 
 export default function TripsCalendar({ trips }: TripsCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedTrips, setSelectedTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  // Debug: Log trips received
-  useEffect(() => {
-   
-  }, [trips]);
-
-  // Find trips on the selected date using isSameDay to compare dates
-  const selectedTrips = trips.filter((trip) => {
-    if (!trip.date) {
-      console.error("Invalid trip date:", trip.date); // Log if date is undefined
-      return false; // Skip invalid dates
-    }
-  
+  // Fetch booking data if no trip is found for the selected date
+  const fetchBookingData = async (date: string) => {
+    setLoading(true);
     try {
-      const tripDate = parseISO(trip.date);
-      return selectedDate ? isSameDay(tripDate, selectedDate) : false;
+      const response = await fetch(`/api/bookings?date=${date}`);
+      const data = await response.json();
+      setSelectedTrips(data || []);
     } catch (error) {
-      console.error("Error in date matching:", trip.date); // Handle invalid date format
-      return false;
+      console.error("Error fetching booking data:", error);
+    } finally {
+      setLoading(false);
     }
-  });
-  
+  };
+
+  // Filter the trips for the selected date
+  useEffect(() => {
+    if (selectedDate) {
+      const filteredTrips = trips.filter((trip) => {
+        const tripDate = parseISO(trip.date);
+        return isSameDay(tripDate, selectedDate);
+      });
+
+      if (filteredTrips.length > 0) {
+        setSelectedTrips(filteredTrips);
+      } else {
+        fetchBookingData(format(selectedDate, "yyyy-MM-dd")); // Fetch data if no trips are found
+      }
+    }
+  }, [selectedDate, trips]);
+
+  // On booking click, pass the data to the booking details page
+  const onBookingClick = (trip: Trip) => {
+    const encodedData = encodeURIComponent(JSON.stringify(trip)); // Encode the trip data
+    router.push(`/dashboard/b2b/bookings/${encodeURIComponent(trip.id)}?data=${encodedData}`); // Navigate to the booking details page with encoded data
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6">
       {/* Calendar Section */}
@@ -86,13 +102,16 @@ export default function TripsCalendar({ trips }: TripsCalendarProps) {
           <CardTitle>Trip Details</CardTitle>
         </CardHeader>
         <CardContent>
-          {selectedTrips.length > 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : selectedTrips.length > 0 ? (
             <ScrollArea className="h-64">
               <ul className="space-y-3">
                 {selectedTrips.map((trip) => (
                   <li
                     key={trip.id}
                     className="p-4 border rounded-lg bg-white dark:bg-gray-800 shadow"
+                    onClick={() => onBookingClick(trip)} // Call onBookingClick when clicking on a trip
                   >
                     <p className="font-medium">
                       <strong>Charter Type:</strong> {trip.charterType || "N/A"}
@@ -115,7 +134,6 @@ export default function TripsCalendar({ trips }: TripsCalendarProps) {
                     <Button
                       variant="default"
                       className="mt-2 w-full"
-                      onClick={() => router.push(`/dashboard/b2b/bookings/${encodeURIComponent(trip.id)}`)}
                     >
                       Learn More
                     </Button>

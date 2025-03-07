@@ -33,7 +33,7 @@ export const roleMenus: RoleMenus = {
       url: "/dashboard/b2b",
       icon: Frame,
       items: [
-        { title: "Skipper", url: "/dashboard/b2b/", icon: User },
+        { title: "Skipper", url: "/dashboard/b2b/", icon: User , disabled:true},
         { title: "Boats", url: "/dashboard/b2b/boats", icon: Ship },
         { title: "Request", url: "/dashboard/b2b/request", icon: FilePlus },    
         { title: "Analytics", url: "/dashboard/b2b/analytics", icon: PieChart },

@@ -120,6 +120,7 @@ async function main() {
   // 8️⃣ Create Boats for each B2B: 3 domestic and 2 foreign per B2B
   let boats = [];
   for (const b2b of b2bs) {
+    // Domestic Boats
     for (let i = 0; i < 3; i++) {
       const boat = await prisma.boat.create({
         data: {
@@ -129,10 +130,12 @@ async function main() {
           isForeign: false,
           boatType: boatTypes[Math.floor(Math.random() * boatTypes.length)],
           length: Number((Math.random() * 40 + 10).toFixed(2)),
+          capacity: Math.floor(Math.random() * 12) + 1, // Random capacity between 1 and 12
         },
       });
       boats.push(boat);
     }
+    // Foreign Boats
     for (let i = 0; i < 2; i++) {
       const boat = await prisma.boat.create({
         data: {
@@ -142,6 +145,7 @@ async function main() {
           isForeign: true,
           boatType: boatTypes[Math.floor(Math.random() * boatTypes.length)],
           length: Number((Math.random() * 40 + 10).toFixed(2)),
+          capacity: Math.floor(Math.random() * 12) + 1, // Random capacity between 1 and 12
         },
       });
       boats.push(boat);
