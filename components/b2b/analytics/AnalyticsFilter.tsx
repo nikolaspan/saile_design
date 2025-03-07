@@ -12,6 +12,7 @@ interface AnalyticsFilterProps {
   boatNameFilter: string;
   setBoatNameFilter: (value: string) => void;
   onExport: () => void;
+  onReset: () => void;
 }
 
 export const AnalyticsFilter: React.FC<AnalyticsFilterProps> = ({
@@ -22,6 +23,7 @@ export const AnalyticsFilter: React.FC<AnalyticsFilterProps> = ({
   boatNameFilter,
   setBoatNameFilter,
   onExport,
+  onReset,
 }) => {
   return (
     <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
@@ -53,8 +55,9 @@ export const AnalyticsFilter: React.FC<AnalyticsFilterProps> = ({
           className="w-full sm:w-auto"
         />
       </div>
-      <div className="mt-2 sm:mt-0">
+      <div className="mt-2 sm:mt-0 flex gap-4">
         <Button onClick={onExport}>Export CSV</Button>
+        <Button variant="outline" onClick={onReset}>Reset Filters</Button>
       </div>
     </div>
   );

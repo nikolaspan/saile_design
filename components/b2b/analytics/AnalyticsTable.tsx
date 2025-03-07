@@ -53,9 +53,10 @@ const formatDate = (isoDate: string): string => {
 
 interface AnalyticsTableProps {
   data: YachtData[];
+  onSort: (column: keyof YachtData, order: "asc" | "desc") => void;
 }
 
-export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data }) => {
+export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onSort }) => {
   return (
     <div className="overflow-x-auto w-full">
       <div className="min-w-[800px] max-h-[400px] overflow-auto">
@@ -63,7 +64,13 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data }) => {
           <TableHeader>
             <TableRow>
               {tableHeaders.map((header, idx) => (
-                <TableHead key={idx}>{header.label}</TableHead>
+                <TableHead 
+                  key={idx} 
+                  onClick={() => onSort(header.key, 'asc')} 
+                  className="cursor-pointer"
+                >
+                  {header.label}
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>

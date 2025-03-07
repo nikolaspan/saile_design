@@ -20,16 +20,42 @@ export default function AnalyticsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [boatNameFilter, setBoatNameFilter] = useState("");
+  const [sortColumn, setSortColumn] = useState<keyof YachtData | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  const resetFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setBoatNameFilter("");
+  };
 
   // Filtered Data
   const filteredData = useMemo(() => {
     if (!data) return [];
-    return data.filter((row) => {
-      const matchesBoatName =
-        boatNameFilter === "" || row.boatName.toLowerCase().includes(boatNameFilter.toLowerCase());
-      return matchesBoatName;
-    });
-  }, [data, boatNameFilter]);
+    
+    return data
+      .filter((row) => {
+        const matchesBoatName =
+          boatNameFilter === "" || row.boatName.toLowerCase().includes(boatNameFilter.toLowerCase());
+        const matchesDateRange = 
+          (startDate ? new Date(row.date) >= new Date(startDate) : true) &&
+          (endDate ? new Date(row.date) <= new Date(endDate) : true);
+        
+        return matchesBoatName && matchesDateRange;
+      })
+      .sort((a, b) => {
+        if (!sortColumn) return 0;
+        
+        const valA = a[sortColumn] as string | number;
+        const valB = b[sortColumn] as string | number;
+        
+        if (sortOrder === "asc") {
+          return valA < valB ? -1 : 1;
+        } else {
+          return valA < valB ? 1 : -1;
+        }
+      });
+  }, [data, boatNameFilter, startDate, endDate, sortColumn, sortOrder]);
 
   // Export to CSV
   const exportToCSV = () => {
@@ -79,11 +105,12 @@ export default function AnalyticsPage() {
             setEndDate={setEndDate} 
             boatNameFilter={boatNameFilter} 
             setBoatNameFilter={setBoatNameFilter} 
-            onExport={exportToCSV} 
+            onExport={exportToCSV}
+            onReset={resetFilters}
           />
           {isLoading && <p>Loading...</p>}
           {error && <p>Error loading data</p>}
-          {!isLoading && !error && <AnalyticsTable data={filteredData} />}
+          {!isLoading && !error && <AnalyticsTable data={filteredData} onSort={(column, order) => { setSortColumn(column); setSortOrder(order); }} />}
         </CardContent>
       </Card>
     </DashboardLayout>

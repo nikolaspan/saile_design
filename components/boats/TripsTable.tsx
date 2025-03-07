@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
@@ -81,7 +79,6 @@ export default function TripsTable() {
   }, []);
 
   // Return Tailwind classes based on status:
-  // Completed = green, Definitive = blue, others = orange.
   const getBadgeVariant = (status: string) => {
     if (status === "Completed") return "bg-green-500 text-white";
     if (status === "Definitive") return "bg-blue-500 text-white";
@@ -94,6 +91,16 @@ export default function TripsTable() {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField("hotel");
+      setSortDirection("asc");
+    }
+  };
+
+  // Toggle sorting by Date
+  const handleSortDate = () => {
+    if (sortField === "date") {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField("date");
       setSortDirection("asc");
     }
   };
@@ -134,6 +141,7 @@ export default function TripsTable() {
       });
     }
 
+    // Sorting by Hotel or Date
     if (sortField === "hotel") {
       filtered.sort((a, b) => {
         const nameA = a.boat.hotel.name.toLowerCase();
@@ -141,6 +149,14 @@ export default function TripsTable() {
         if (nameA < nameB) return sortDirection === "asc" ? -1 : 1;
         if (nameA > nameB) return sortDirection === "asc" ? 1 : -1;
         return 0;
+      });
+    }
+
+    if (sortField === "date") {
+      filtered.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
 
@@ -162,7 +178,6 @@ export default function TripsTable() {
     const encodedData = encodeURIComponent(JSON.stringify(booking)); // Serialize and encode the booking data
     router.push(`/dashboard/b2b/bookings/${booking.id}?data=${encodedData}`); // Pass the encoded data via query params
   };
-  
 
   if (error) return <div>Error loading trips.</div>;
   if (!bookings) return <div>Loading trips...</div>;
@@ -248,7 +263,9 @@ export default function TripsTable() {
                   Hotel Name {sortField === "hotel" && (sortDirection === "asc" ? "↑" : "↓")}
                 </TableHead>
                 <TableHead className="text-left">Final Price</TableHead>
-                <TableHead className="text-left">Date</TableHead>
+                <TableHead className="text-left cursor-pointer" onClick={handleSortDate}>
+                  Date {sortField === "date" && (sortDirection === "asc" ? "↑" : "↓")}
+                </TableHead>
                 <TableHead className="text-left">Status</TableHead>
               </TableRow>
             </TableHeader>
